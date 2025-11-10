@@ -1,0 +1,437 @@
+                        <label for="taskInput" class="block text-sm font-semibold text-slate-700 mb-2">任務內容</label>
+                        <input type="text" id="taskInput" class="note-input" placeholder="例如：複習數學 Ch.3、寫英文習作 p.20-25..." />
+                    </div>
+                    <div>
+                        <label for="daySelect" class="block text-sm font-semibold text-slate-700 mb-2">安排在哪一天？</label>
+                        <select id="daySelect" class="note-input">
+                            <option value="mon">星期一</option>
+                            <option value="tue">星期二</option>
+                            <option value="wed">星期三</option>
+                            <option value="thu">星期四</option>
+                            <option value="fri">星期五</option>
+                            <option value="sat">星期六</option>
+                            <option value="sun">星期日</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <label class="flex items-center p-3 cursor-pointer bg-yellow-50 rounded-lg border-2 border-yellow-200 hover:bg-yellow-100 transition w-full">
+                            <input type="checkbox" id="isBufferCheck" class="h-5 w-5 rounded text-yellow-500 border-yellow-300" />
+                            <span class="ml-2 text-sm text-yellow-800 font-semibold">🔑 抓漏時間</span>
+                        </label>
+                    </div>
+                </div>
+                <button id="addTaskBtn" class="btn btn-primary mt-4">➕ 加入計畫</button>
+            </div>
+
+            <div class="planner-grid">
+                <div class="day-column" id="day-mon"><h3 class="day-header">星期一</h3><ul class="space-y-2"></ul></div>
+                <div class="day-column" id="day-tue"><h3 class="day-header">星期二</h3><ul class="space-y-2"></ul></div>
+                <div class="day-column" id="day-wed"><h3 class="day-header">星期三</h3><ul class="space-y-2"></ul></div>
+                <div class="day-column" id="day-thu"><h3 class="day-header">星期四</h3><ul class="space-y-2"></ul></div>
+                <div class="day-column" id="day-fri"><h3 class="day-header">星期五</h3><ul class="space-y-2"></ul></div>
+                <div class="day-column" id="day-sat"><h3 class="day-header">星期六</h3><ul class="space-y-2"></ul></div>
+                <div class="day-column" id="day-sun"><h3 class="day-header">星期日</h3><ul class="space-y-2"></ul></div>
+            </div>
+            <div class="flex gap-3 mt-4">
+                <button id="clearPlannerBtn" class="btn btn-danger text-sm">🗑️ 清空本週計畫</button>
+                <button class="btn btn-info text-sm" onclick="exportPlanner()">💾 匯出計畫</button>
+            </div>
+        </section>
+
+        <!-- Note Generator -->
+        <section id="tab-content-notes" class="tab-content">
+            <h2 class="section-title">📝 筆記模板產生器</h2>
+            <p class="text-slate-700 mb-4 text-lg leading-relaxed">
+                選擇一個模板，將「輸入」轉化為「整理」和「反思」。所有筆記會自動儲存到「資料管理」。
+            </p>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label for="noteTemplateSelect" class="block text-sm font-semibold text-slate-700 mb-2">選擇筆記模板</label>
+                        <select id="noteTemplateSelect" class="note-input">
+                            <option value="default">🧠 預設模板 (學習反思)</option>
+                            <option value="diary">✍️ 日記模板 (每日反思)</option>
+                            <option value="book-report">📖 讀書心得 (知識萃取)</option>
+                            <option value="bujo">📅 子彈筆記 (每日任務)</option>
+                            <option value="zettelkasten">🗂️ 卡片盒筆記 (知識點)</option>
+                            <option value="cornell">📖 康乃爾筆記 (課堂筆記)</option>
+                            <option value="mindmap">🌳 心智圖筆記 (概念連結)</option>
+                            <option value="feynman">👨‍🏫 費曼筆記 (用自己的話解釋)</option>
+                        </select>
+                    </div>
+
+                    <!-- Default Template -->
+                    <div id="template-default" class="template-fields space-y-4">
+                        <div><label for="noteTheme" class="block text-sm font-semibold text-slate-700 mb-2">主題 (Theme)</label><input type="text" id="noteTheme" class="note-input" placeholder="今天學習的主題是什麼？" /></div>
+                        <div><label for="notePoints" class="block text-sm font-semibold text-slate-700 mb-2">重點3句 (3 Key Points)</label><textarea id="notePoints" class="note-input h-24" placeholder="用三句話總結最重要的觀念..."></textarea></div>
+                        <div><label for="noteLearned" class="block text-sm font-semibold text-slate-700 mb-2">我學到什麼 (What I Learned)</label><textarea id="noteLearned" class="note-input h-24" placeholder="我學會了如何應用..."></textarea></div>
+                        <div><label for="noteQuestion" class="block text-sm font-semibold text-slate-700 mb-2">我還不懂什麼 (What I Still Don't Know)</label><textarea id="noteQuestion" class="note-input h-24" placeholder="我還是不太懂... / 我想問..."></textarea></div>
+                    </div>
+
+                    <!-- Diary Template -->
+                    <div id="template-diary" class="template-fields space-y-4 hidden">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label for="noteDiaryDate" class="block text-sm font-semibold text-slate-700 mb-2">日期 (Date)</label><input type="date" id="noteDiaryDate" class="note-input" /></div>
+                            <div><label for="noteDiaryMood" class="block text-sm font-semibold text-slate-700 mb-2">心情/天氣</label><input type="text" id="noteDiaryMood" class="note-input" placeholder="☀️, 😊, ..." /></div>
+                        </div>
+                        <div><label for="noteDiaryGoodThings" class="block text-sm font-semibold text-slate-700 mb-2">今日三件好事 (Three Good Things)</label><textarea id="noteDiaryGoodThings" class="note-input h-24" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea></div>
+                        <div><label for="noteDiaryImprove" class="block text-sm font-semibold text-slate-700 mb-2">一件可以做得更好的事 (One Thing to Improve)</label><textarea id="noteDiaryImprove" class="note-input h-20" placeholder="關於...，下次我可以試著..."></textarea></div>
+                        <div><label for="noteDiaryReflection" class="block text-sm font-semibold text-slate-700 mb-2">今日反思 (Today's Reflection)</label><textarea id="noteDiaryReflection" class="note-input h-24" placeholder="自由書寫任何想法..."></textarea></div>
+                    </div>
+
+                    <!-- Book Report Template -->
+                    <div id="template-book-report" class="template-fields space-y-4 hidden">
+                        <div><label for="noteBookTitle" class="block text-sm font-semibold text-slate-700 mb-2">書名 & 作者</label><input type="text" id="noteBookTitle" class="note-input" placeholder="例如：《原子習慣》 by 詹姆斯·克利爾" /></div>
+                        <div><label for="noteBookCore" class="block text-sm font-semibold text-slate-700 mb-2">本書核心概念 (一句話總結)</label><textarea id="noteBookCore" class="note-input h-20" placeholder="這本書最主要在談..."></textarea></div>
+                        <div><label for="noteBookTakeaways" class="block text-sm font-semibold text-slate-700 mb-2">三個主要收穫 (Three Key Takeaways)</label><textarea id="noteBookTakeaways" class="note-input h-24" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea></div>
+                        <div><label for="noteBookQuote" class="block text-sm font-semibold text-slate-700 mb-2">一句觸動我的話</label><textarea id="noteBookQuote" class="note-input h-20" placeholder="書中最讓我印象深刻的一句話是..."></textarea></div>
+                        <div><label for="noteBookApply" class="block text-sm font-semibold text-slate-700 mb-2">我將如何應用 (How I'll Apply It)</label><textarea id="noteBookApply" class="note-input h-24" placeholder="根據書中的...，我計畫開始..."></textarea></div>
+                    </div>
+
+                    <!-- Bujo Template -->
+                    <div id="template-bujo" class="template-fields space-y-4 hidden">
+                        <div><label for="noteBujoDate" class="block text-sm font-semibold text-slate-700 mb-2">日期 (Date)</label><input type="date" id="noteBujoDate" class="note-input" /></div>
+                        <div><label for="noteBujoTasks" class="block text-sm font-semibold text-slate-700 mb-2">任務 (Tasks)</label><textarea id="noteBujoTasks" class="note-input h-24" placeholder="輸入任務，每行一個..."></textarea></div>
+                        <div><label for="noteBujoEvents" class="block text-sm font-semibold text-slate-700 mb-2">事件 (Events)</label><textarea id="noteBujoEvents" class="note-input h-24" placeholder="輸入事件，每行一個..."></textarea></div>
+                        <div><label for="noteBujoNotes" class="block text-sm font-semibold text-slate-700 mb-2">筆記 (Notes)</label><textarea id="noteBujoNotes" class="note-input h-24" placeholder="輸入筆記，每行一個..."></textarea></div>
+                    </div>
+
+                    <!-- Zettelkasten Template -->
+                    <div id="template-zettelkasten" class="template-fields space-y-4 hidden">
+                        <div><label for="noteZettelID" class="block text-sm font-semibold text-slate-700 mb-2">ID (可自動生成)</label><input type="text" id="noteZettelID" class="note-input" placeholder="例如：202511100930" /></div>
+                        <div><label for="noteZettelTitle" class="block text-sm font-semibold text-slate-700 mb-2">標題/概念 (Title/Concept)</label><input type="text" id="noteZettelTitle" class="note-input" placeholder="這個知識點的核心概念是什麼？" /></div>
+                        <div><label for="noteZettelContent" class="block text-sm font-semibold text-slate-700 mb-2">內容 (Content)</label><textarea id="noteZettelContent" class="note-input h-32" placeholder="用自己的話寫下這個概念的完整說明..."></textarea></div>
+                        <div><label for="noteZettelTags" class="block text-sm font-semibold text-slate-700 mb-2">標籤 (Tags)</label><input type="text" id="noteZettelTags" class="note-input" placeholder="用 # 符號分隔, 例如：#學習 #記憶" /></div>
+                        <div><label for="noteZettelLinks" class="block text-sm font-semibold text-slate-700 mb-2">相關連結 (Links)</label><input type="text" id="noteZettelLinks" class="note-input" placeholder="用 [[...]] 符號分隔, 例如：[[202511090800]]" /></div>
+                    </div>
+
+                    <!-- Cornell Template -->
+                    <div id="template-cornell" class="template-fields space-y-4 hidden">
+                        <div><label for="noteCornellTitle" class="block text-sm font-semibold text-slate-700 mb-2">課程/主題</label><input type="text" id="noteCornellTitle" class="note-input" placeholder="今天上的課程或主題" /></div>
+                        <div><label for="noteCornellCues" class="block text-sm font-semibold text-slate-700 mb-2">關鍵字/問題 (Cues)</label><textarea id="noteCornellCues" class="note-input h-24" placeholder="寫下重要關鍵字和問題..."></textarea></div>
+                        <div><label for="noteCornellNotes" class="block text-sm font-semibold text-slate-700 mb-2">課堂筆記 (Notes)</label><textarea id="noteCornellNotes" class="note-input h-32" placeholder="詳細記錄課堂內容..."></textarea></div>
+                        <div><label for="noteCornellSummary" class="block text-sm font-semibold text-slate-700 mb-2">總結 (Summary)</label><textarea id="noteCornellSummary" class="note-input h-24" placeholder="用 2-3 句話總結這堂課的核心..."></textarea></div>
+                    </div>
+
+                    <!-- Mind Map Template -->
+                    <div id="template-mindmap" class="template-fields space-y-4 hidden">
+                        <div><label for="noteMindmapCentral" class="block text-sm font-semibold text-slate-700 mb-2">中心主題</label><input type="text" id="noteMindmapCentral" class="note-input" placeholder="核心概念是什麼？" /></div>
+                        <div><label for="noteMindmapBranches" class="block text-sm font-semibold text-slate-700 mb-2">主要分支 (每行一個)</label><textarea id="noteMindmapBranches" class="note-input h-32" placeholder="分支1&#10;分支2&#10;分支3"></textarea></div>
+                        <div><label for="noteMindmapDetails" class="block text-sm font-semibold text-slate-700 mb-2">細節補充</label><textarea id="noteMindmapDetails" class="note-input h-32" placeholder="每個分支的詳細說明..."></textarea></div>
+                    </div>
+
+                    <!-- Feynman Template -->
+                    <div id="template-feynman" class="template-fields space-y-4 hidden">
+                        <div><label for="noteFeynmanConcept" class="block text-sm font-semibold text-slate-700 mb-2">要解釋的概念</label><input type="text" id="noteFeynmanConcept" class="note-input" placeholder="例如：光合作用" /></div>
+                        <div><label for="noteFeynmanSimple" class="block text-sm font-semibold text-slate-700 mb-2">用簡單的話解釋 (像在教小學生)</label><textarea id="noteFeynmanSimple" class="note-input h-32" placeholder="想像你在跟一個8歲小孩解釋..."></textarea></div>
+                        <div><label for="noteFeynmanAnalogy" class="block text-sm font-semibold text-slate-700 mb-2">用比喻/舉例說明</label><textarea id="noteFeynmanAnalogy" class="note-input h-24" placeholder="就像是..."></textarea></div>
+                        <div><label for="noteFeynmanGaps" class="block text-sm font-semibold text-slate-700 mb-2">我還說不清楚的部分</label><textarea id="noteFeynmanGaps" class="note-input h-24" placeholder="哪些地方我講得不夠清楚？"></textarea></div>
+                    </div>
+
+                    <button id="generateNoteBtn" class="btn btn-primary w-full">✨ 產生筆記</button>
+                </div>
+
+                <div>
+                    <label for="generatedNote" class="block text-sm font-semibold text-slate-700 mb-2">產生的筆記</label>
+                    <textarea id="generatedNote" readonly placeholder="點擊「產生筆記」後，內容將顯示於此..."></textarea>
+                    <div class="flex gap-3 mt-4">
+                        <button id="copyNoteBtn" class="btn btn-secondary flex-1">📋 複製到剪貼簿</button>
+                        <button id="clearNoteBtn" class="btn btn-clear flex-1">🗑️ 清除</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Voice Note -->
+        <section id="tab-content-voice" class="tab-content">
+            <h2 class="section-title">🎙️ 語音筆記工具</h2>
+            <p class="text-slate-700 mb-4 text-lg leading-relaxed">
+                將口說內容即時轉為文字，適合快速記錄靈感、聽課筆記或草擬文章。
+            </p>
+            <div class="content-box">
+                <div class="voice-note-container">
+                    <div class="transcript-container" id="transcriptContainer-voice">
+                        <pre id="transcript-output"><span class="placeholder" id="placeholder-text-voice">點擊「開始辨識」後，你的逐字稿將會顯示在這裡...</span></pre>
+                    </div>
+                    
+                    <div class="voice-settings">
+                        <label for="languageSelector-voice">辨識語言:</label>
+                        <select id="languageSelector-voice" title="選擇要進行辨識的語言">
+                            <option value="zh-TW">中文 (台灣TW)</option>
+                            <option value="zh-CN">中文 (中国大陆CN)</option>
+                            <option value="zh-HK">粵語 (香港HK)</option>
+                            <option value="en-US">English (US)</option>
+                            <option value="en-GB">English (UK)</option>
+                            <option value="ja-JP">日本語(JP)</option>
+                            <option value="ko-KR">한국어(KR)</option>
+                            <option value="es-ES">Español (España)</option>
+                            <option value="fr-FR">Français</option>
+                            <option value="de-DE">Deutsch</option>
+                        </select>
+                    </div>
+                    
+                    <div class="voice-controls">
+                        <button id="controlBtn-voice" class="btn btn-primary">開始辨識</button>
+                        <button id="copyBtn-voice" class="btn btn-secondary" disabled>複製內容</button>
+                        <button id="sendToNoteBtn-voice" class="btn btn-info" disabled>📝 傳送到筆記</button>
+                        <button id="exportBtn-voice" class="btn btn-clear" disabled>輸出逐字稿</button>
+                    </div>
+
+                    <div class="warning-notice">
+                        ⚠️ 本工具將把收到音檔上傳 Google 請謹慎使用
+                    </div>
+                </div>
+            </div>
+            <div class="privacy-notice mt-4">
+                <details>
+                    <summary>使用須知 & 隱私聲明</summary>
+                    <div class="content">
+                        <p>本工具透過瀏覽器內建的 Web Speech API 進行語音轉文字，這會將您的聲音資料傳送到 Google 的伺服器進行處理。請務必了解以下事項：</p>
+                        <h3>適合的使用場景：</h3>
+                        <ul>
+                            <li class="safe">輔助聆聽公開的線上演講、課程。</li>
+                            <li class="safe">轉錄影片、Podcast 等公開內容。</li>
+                            <li class="safe">個人學習、語言練習。</li>
+                        </ul>
+                        <h3>高風險場景 (絕對不要使用)：</h3>
+                        <ul>
+                            <li class="unsafe">任何涉及<strong>商業機密</strong>或公司內部資訊的會議。</li>
+                            <li class="unsafe">任何涉及<strong>個人隱私</strong>的對話 (例如與醫生、律師的對話)。</li>
+                            <li class="unsafe">任何包含<strong>敏感個資</strong>的內容 (如身分證號、密碼等)。</li>
+                        </ul>
+                        <p>針對敏感內容，強烈建議使用像 Whisper 這樣完全在您本機離線運作的工具，以確保資料安全。</p>
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <!-- Flashcards -->
+        <section id="tab-content-flashcards" class="tab-content">
+            <h2 class="section-title">🎴 記憶卡片系統</h2>
+            <p class="text-slate-700 mb-4 text-lg leading-relaxed">
+                製作問答卡片，點擊翻面查看答案。定期複習加深記憶！
+            </p>
+            
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="content-box">
+                    <h3 class="font-bold text-lg mb-3 text-blue-800">新增卡片</h3>
+                    <div class="space-y-3">
+                        <div><label for="flashcardQuestion" class="block text-sm font-semibold text-slate-700 mb-2">問題/正面</label><textarea id="flashcardQuestion" class="note-input h-24" placeholder="例如：什麼是光合作用？"></textarea></div>
+                        <div><label for="flashcardAnswer" class="block text-sm font-semibold text-slate-700 mb-2">答案/背面</label><textarea id="flashcardAnswer" class="note-input h-24" placeholder="光合作用是植物利用光能..."></textarea></div>
+                        <div><label for="flashcardCategory" class="block text-sm font-semibold text-slate-700 mb-2">分類標籤</label><input type="text" id="flashcardCategory" class="note-input" placeholder="例如：生物、第三章" /></div>
+                        <button id="addFlashcardBtn" class="btn btn-primary w-full">➕ 新增卡片</button>
+                    </div>
+                </div>
+                
+                <div class="content-box">
+                    <h3 class="font-bold text-lg mb-3 text-blue-800">卡片預覽</h3>
+                    <div id="flashcardPreview" class="flashcard">
+                        <div class="flashcard-inner">
+                            <div class="flashcard-front"><div class="text-center"><p class="text-sm mb-2 opacity-75">👆 點擊卡片翻面</p><p id="previewQuestion">製作你的第一張卡片</p></div></div>
+                            <div class="flashcard-back"><div class="text-center"><p class="text-sm mb-2 opacity-75">答案</p><p id="previewAnswer">背面內容會顯示在這裡</p></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-box">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg text-blue-800">我的卡片庫 (<span id="flashcardCount">0</span> 張)</h3>
+                    <div class="flex gap-2">
+                        <select id="flashcardFilterCategory" class="note-input text-sm"><option value="all">全部分類</option></select>
+                        <button class="btn btn-info text-sm" onclick="startFlashcardReview()">🔄 開始複習</button>
+                        <button class="btn btn-danger text-sm" onclick="clearAllFlashcards()">🗑️ 清空全部</button>
+                    </div>
+                </div>
+                <div id="flashcardList" class="space-y-2"></div>
+            </div>
+        </section>
+
+        <!-- Pomodoro Timer -->
+        <section id="tab-content-pomodoro" class="tab-content">
+            <h2 class="section-title">⏱️ 番茄鐘專注計時器</h2>
+            <p class="text-slate-700 mb-6 text-lg leading-relaxed">
+                使用番茄工作法：25 分鐘專注學習 → 5 分鐘休息 → 重複 4 次後休息 15-30 分鐘。
+            </p>
+            
+            <div class="content-box max-w-2xl mx-auto text-center">
+                <div class="mb-6">
+                    <div class="timer-display" id="timerDisplay">25:00</div>
+                    <div class="text-lg font-semibold text-slate-600 mb-4" id="timerStatus">準備開始學習 🍅</div>
+                    <div class="progress-bar mb-4"><div class="progress-fill" id="timerProgress" style="width: 0%"></div></div>
+                </div>
+                
+                <div class="timer-controls mb-6">
+                    <button id="timerStart" class="btn btn-primary">▶️ 開始</button>
+                    <button id="timerPause" class="btn btn-warning hidden">⏸️ 暫停</button>
+                    <button id="timerReset" class="btn btn-danger">🔄 重置</button>
+                    <button id="timerSkip" class="btn btn-info">⏭️ 跳過</button>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg"><div class="text-3xl font-bold text-blue-600" id="pomodoroCount">0</div><div class="text-sm text-slate-600">完成番茄數</div></div>
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg"><div class="text-3xl font-bold text-green-600" id="studyMinutes">0</div><div class="text-sm text-slate-600">學習分鐘數</div></div>
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg"><div class="text-3xl font-bold text-purple-600" id="breakMinutes">0</div><div class="text-sm text-slate-600">休息分鐘數</div></div>
+                </div>
+                
+                <div class="mt-6 text-left bg-blue-50 p-4 rounded-lg">
+                    <h4 class="font-bold text-blue-800 mb-2">📝 當前任務</h4>
+                    <input type="text" id="currentTask" class="note-input" placeholder="寫下你現在要做的事..." />
+                </div>
+            </div>
+            
+            <div class="mt-6 grid md:grid-cols-3 gap-4">
+                <div class="content-box">
+                    <h4 class="font-bold text-blue-800 mb-2">⚙️ 自訂時長</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center justify-between"><span class="text-sm">專注時間 (分)</span><input type="number" id="focusTime" class="note-input w-20 text-center" value="25" min="1" max="60" /></label>
+                        <label class="flex items-center justify-between"><span class="text-sm">短休息 (分)</span><input type="number" id="shortBreak" class="note-input w-20 text-center" value="5" min="1" max="15" /></label>
+                        <label class="flex items-center justify-between"><span class="text-sm">長休息 (分)</span><input type="number" id="longBreak" class="note-input w-20 text-center" value="15" min="5" max="30" /></label>
+                    </div>
+                </div>
+                
+                <div class="content-box">
+                    <h4 class="font-bold text-blue-800 mb-2">🔔 提醒設定</h4>
+                    <label class="flex items-center gap-2 mb-2"><input type="checkbox" id="soundEnabled" class="h-4 w-4 rounded" checked /><span class="text-sm">啟用音效提示</span></label>
+                    <label class="flex items-center gap-2"><input type="checkbox" id="notificationEnabled" class="h-4 w-4 rounded" /><span class="text-sm">啟用桌面通知</span></label>
+                </div>
+                
+                <div class="content-box">
+                    <h4 class="font-bold text-blue-800 mb-2">📊 今日統計</h4>
+                    <div class="text-sm space-y-1 text-slate-600">
+                        <div class="flex justify-between"><span>今日番茄數：</span><span class="font-bold" id="todayPomodoros">0</span></div>
+                        <div class="flex justify-between"><span>今日學習：</span><span class="font-bold" id="todayStudy">0 分鐘</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Statistics -->
+        <section id="tab-content-stats" class="tab-content">
+            <h2 class="section-title">📊 學習統計分析</h2>
+            <p class="text-slate-700 mb-6 text-lg leading-relaxed">
+                追蹤你的學習進度，了解自己的學習習慣，持續優化！
+            </p>
+            
+            <div class="grid md:grid-cols-4 gap-4 mb-6">
+                <div class="stat-card"><div class="stat-number" id="totalTopics">0</div><div class="stat-label">總知識點</div></div>
+                <div class="stat-card"><div class="stat-number" id="masteredTopics">0</div><div class="stat-label">已掌握</div></div>
+                <div class="stat-card"><div class="stat-number" id="totalNotes">0</div><div class="stat-label">筆記數量</div></div>
+                <div class="stat-card"><div class="stat-number" id="totalCards">0</div><div class="stat-label">記憶卡片</div></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="content-box">
+                    <h3 class="font-bold text-lg mb-4 text-blue-800">📈 知識掌握度分布</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between mb-1"><span class="text-sm font-medium">✅ 已掌握</span><span class="text-sm font-bold text-green-600" id="greenPercent">0%</span></div>
+                            <div class="progress-bar h-4"><div class="progress-fill bg-gradient-to-r from-green-400 to-green-600" id="greenBar" style="width: 0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1"><span class="text-sm font-medium">⚠️ 半懂的</span><span class="text-sm font-bold text-yellow-600" id="yellowPercent">0%</span></div>
+                            <div class="progress-bar h-4"><div class="progress-fill bg-gradient-to-r from-yellow-400 to-yellow-600" id="yellowBar" style="width: 0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1"><span class="text-sm font-medium">❌ 不會的</span><span class="text-sm font-bold text-red-600" id="redPercent">0%</span></div>
+                            <div class="progress-bar h-4"><div class="progress-fill bg-gradient-to-r from-red-400 to-red-600" id="redBar" style="width: 0%"></div></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 p-4 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg">
+                        <h4 class="font-bold text-sm mb-2">🎯 進步指標</h4>
+                        <div class="text-sm space-y-1">
+                            <div class="flex justify-between"><span>本週新增已掌握：</span><span class="font-bold text-green-600" id="weeklyProgress">0 項</span></div>
+                            <div class="flex justify-between"><span>需要加強的：</span><span class="font-bold text-red-600" id="needsFocus">0 項</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="content-box">
+                    <h3 class="font-bold text-lg mb-4 text-blue-800">🍅 番茄鐘統計</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg"><span class="text-sm font-medium">累計番茄數</span><span class="text-2xl font-bold text-blue-600" id="statTotalPomodoros">0</span></div>
+                        <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg"><span class="text-sm font-medium">累計學習時間</span><span class="text-2xl font-bold text-green-600" id="statTotalStudy">0 分鐘</span></div>
+                        <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg"><span class="text-sm font-medium">平均每日番茄</span><span class="text-2xl font-bold text-purple-600" id="statAvgDaily">0</span></div>
+                        <div class="flex justify-between items-center p-3 bg-orange-50 rounded-lg"><span class="text-sm font-medium">連續學習天數</span><span class="text-2xl font-bold text-orange-600" id="studyStreak">0 天</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-box mt-6">
+                <h3 class="font-bold text-lg mb-4 text-blue-800">📅 本週計畫完成度</h3>
+                <div id="weeklyCompletion" class="grid grid-cols-7 gap-2">
+                    <div class="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg"><div class="text-xs font-semibold text-slate-600 mb-2">週一</div><div class="text-2xl font-bold" id="mon-completion">0%</div><div class="text-xs text-slate-500 mt-1" id="mon-tasks">0/0</div></div>
+                    <div class="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg"><div class="text-xs font-semibold text-slate-600 mb-2">週二</div><div class="text-2xl font-bold" id="tue-completion">0%</div><div class="text-xs text-slate-500 mt-1" id="tue-tasks">0/0</div></div>
+                    <div class="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg"><div class="text-xs font-semibold text-slate-600 mb-2">週三</div><div class="text-2xl font-bold" id="wed-completion">0%</div><div class="text-xs text-slate-500 mt-1" id="wed-tasks">0/0</div></div>
+                    <div class="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg"><div class="text-xs font-semibold text-slate-600 mb-2">週四</div><div class="text-2xl font-bold" id="thu-completion">0%</div><div class="text-xs text-slate-500 mt-1" id="thu-tasks">0/0</div></div>
+                    <div class="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg"><div class="text-xs font-semibold text-slate-600 mb-2">週五</div><div class="text-2xl font-bold" id="fri-completion">0%</div><div class="text-xs text-slate-500 mt-1" id="fri-tasks">0/0</div></div>
+                    <div class="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg"><div class="text-xs font-semibold text-slate-600 mb-2">週六</div><div class="text-2xl font-bold" id="sat-completion">0%</div><div class="text-xs text-slate-500 mt-1" id="sat-tasks">0/0</div></div>
+                    <div class="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg"><div class="text-xs font-semibold text-slate-600 mb-2">週日</div><div class="text-2xl font-bold" id="sun-completion">0%</div><div class="text-xs text-slate-500 mt-1" id="sun-tasks">0/0</div></div>
+                </div>
+                
+                <div class="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-green-800">本週整體完成度</span>
+                        <span class="text-3xl font-bold text-green-600" id="overall-completion">0%</span>
+                    </div>
+                    <div class="progress-bar mt-3 h-3"><div class="progress-fill bg-gradient-to-r from-green-400 to-emerald-600" id="overall-bar" style="width: 0%"></div></div>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-6 mt-6">
+                <div class="content-box bg-gradient-to-br from-blue-50 to-purple-50">
+                    <h3 class="font-bold text-lg mb-3 text-blue-800">💡 智能學習建議</h3>
+                    <div id="learningTips" class="space-y-2 text-slate-700"></div>
+                </div>
+                
+                <div class="content-box bg-gradient-to-br from-orange-50 to-yellow-50">
+                    <h3 class="font-bold text-lg mb-3 text-orange-800">🏆 成就系統</h3>
+                    <div id="achievements" class="space-y-2">
+                        <div class="flex items-center gap-3 p-2 bg-white rounded-lg"><span class="text-2xl">🌟</span><div class="flex-1"><div class="font-semibold text-sm">初學者</div><div class="text-xs text-slate-500">完成第一個番茄鐘</div></div><span class="text-xs font-bold" id="achievement-1">未達成</span></div>
+                        <div class="flex items-center gap-3 p-2 bg-white rounded-lg"><span class="text-2xl">📚</span><div class="flex-1"><div class="font-semibold text-sm">知識收集者</div><div class="text-xs text-slate-500">建立10個知識點</div></div><span class="text-xs font-bold" id="achievement-2">未達成</span></div>
+                        <div class="flex items-center gap-3 p-2 bg-white rounded-lg"><span class="text-2xl">🎴</span><div class="flex-1"><div class="font-semibold text-sm">記憶大師</div><div class="text-xs text-slate-500">製作20張記憶卡</div></div><span class="text-xs font-bold" id="achievement-3">未達成</span></div>
+                        <div class="flex items-center gap-3 p-2 bg-white rounded-lg"><span class="text-2xl">🔥</span><div class="flex-1"><div class="font-semibold text-sm">堅持不懈</div><div class="text-xs text-slate-500">連續學習7天</div></div><span class="text-xs font-bold" id="achievement-4">未達成</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-box mt-6">
+                <h3 class="font-bold text-lg mb-4 text-blue-800">📈 學習趨勢圖</h3>
+                <div class="text-sm text-slate-600 mb-3">過去7天的番茄鐘數量</div>
+                <div id="trendChart" class="flex items-end justify-around h-48 bg-gradient-to-t from-blue-50 to-transparent rounded-lg p-4"></div>
+            </div>
+        </section>
+
+        <!-- Manager -->
+        <section id="tab-content-manager" class="tab-content">
+            <h2 class="section-title">📂 資料管理中心</h2>
+            <p class="text-slate-700 mb-6 text-lg leading-relaxed">
+                管理所有筆記、卡片和學習資料。支援搜尋、匯出和備份。
+            </p>
+            
+            <div class="content-box mb-4">
+                <div class="flex gap-3 items-center flex-wrap">
+                    <input type="search" id="searchNotesInput" class="note-input flex-1" placeholder="🔍 搜尋標題、內容或標籤..." />
+                    <button class="btn btn-info" onclick="exportAllData()">💾 匯出全部資料</button>
+                    <button class="btn btn-warning" onclick="importData()">📥 匯入資料</button>
+                    <button class="btn btn-danger" onclick="clearAllData()">🗑️ 清空全部</button>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-4 mb-6">
+                <button class="content-box text-center cursor-pointer hover:shadow-lg" onclick="filterNotes('all')"><div class="text-4xl mb-2">📚</div><div class="font-bold text-lg">全部筆記</div><div class="text-2xl font-bold text-blue-600" id="allNotesCount">0</div></button>
+                <button class="content-box text-center cursor-pointer hover:shadow-lg" onclick="filterNotes('recent')"><div class="text-4xl mb-2">🕐</div><div class="font-bold text-lg">最近編輯</div><div class="text-sm text-slate-600">7天內</div></button>
+                <button class="content-box text-center cursor-pointer hover:shadow-lg" onclick="filterNotes('important')"><div class="text-4xl mb-2">⭐</div><div class="font-bold text-lg">重要筆記</div><div class="text-sm text-slate-600">已標記</div></button>
+            </div>
+            
+            <div id="notesManager"></div>
+        </section>
+
+    </div>
+
+    <!-- 引用外部 JavaScript 檔案 -->
+    <script src="script.js"></script>
+</body>
+</html>
