@@ -168,6 +168,23 @@ h3.section-subtitle {
     margin-top: 1.75rem;
     margin-bottom: 1rem;
 }
+
+/* --- Tab 內容切換 (新增的修正) --- */
+.tab-content {
+    display: none; /* 預設隱藏所有內容區塊 */
+}
+
+.tab-content.active {
+    display: block; /* 只顯示有 "active" 類別的區塊 */
+    animation: fadeIn 0.5s ease-out; /* 增加一個淡入動畫 */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+/* --------------------------------- */
+
 .content-box {
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
     border: 1px solid #e2e8f0;
