@@ -528,4 +528,4 @@ function getTimestampID() { const d = new Date(); return `${d.getFullYear()}${St
 function getTodayDate() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function downloadFile(filename, content) { const blob = new Blob([content], { type: 'text/plain;charset=utf-8' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url); }
 function createModal() { const overlay = document.createElement('div'); overlay.className = 'modal-overlay'; overlay.onclick = (e) => { if (e.target === overlay) closeModal(); }; const modal = document.createElement('div'); modal.className = 'modal'; overlay.appendChild(modal); document.body.appendChild(overlay); window.currentModal = overlay; return modal; }
-function closeModal() { if (window.currentModal) { document.body.removeChild(window.currentModal); window.currentModal = null; } }
+function closeModal() { if (window.currentModal) { document.body.removeChild(window.currentModal); window.currentModal = null; } 
