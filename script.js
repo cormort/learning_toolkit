@@ -537,26 +537,37 @@ window.voiceNoteModule = (function() {
         });
     }
 
+    // --- [FIXED] ---
     function sendToNoteTool() {
         if (state.transcriptSegments.length <= 1) {
             alert("沒有逐字稿內容可以傳送。");
             return;
         }
-        const transcriptText = getFullTranscriptText(false);
-        
+        const transcriptText = getFullTranscriptText(false); // Get text without timestamps
+
+        // 1. Switch to the notes tab
         window.setActiveTab('notes');
-        
-        document.getElementById('noteTemplateSelect').value = 'default';
-        noteTemplateSelect.dispatchEvent(new Event('change'));
-        
+
+        // 2. Set the dropdown to the correct template
+        const noteTemplateSelect = document.getElementById('noteTemplateSelect');
+        noteTemplateSelect.value = 'default';
+
+        // 3. Manually ensure the correct template fields are visible
+        //    (This replaces dispatchEvent for better reliability)
+        document.querySelectorAll('.template-fields').forEach(div => div.classList.add('hidden'));
+        document.getElementById('template-default').classList.remove('hidden');
+
+        // 4. Now that the fields are visible, populate them
         document.getElementById('noteTheme').value = `語音筆記 - ${new Date().toLocaleString()}`;
         document.getElementById('noteLearned').value = transcriptText;
         
+        // 5. Clear other fields in that template for a clean slate
         document.getElementById('notePoints').value = '';
         document.getElementById('noteQuestion').value = '';
         
         alert("逐字稿已成功傳送到筆記工具！");
     }
+    // --- [END OF FIX] ---
 
     function savePreferences() {
         ls.setItem('voice_note_rec_lang', UIElements.languageSelector.value);
