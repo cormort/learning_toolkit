@@ -1,3 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>學習導航系統 - 進階版</title>
+    <!-- 引用 Tailwind CSS 和 Google Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- 引用外部 CSS 檔案 -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="main-container max-w-7xl mx-auto rounded-3xl p-6 md:p-10">
+
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
+                🧭 學習導航系統
+            </h1>
+            <p class="text-lg text-slate-600 font-medium">將「焦慮」轉化為「掌控」的互動學習工具</p>
+        </header>
+
+        <nav class="tab-buttons" aria-label="主選單">
+            <button id="tab-btn-guide" class="tab-btn active">📚 使用指南</button>
+            <button id="tab-btn-triage" class="tab-btn inactive">🗺️ 知識盤點</button>
+            <button id="tab-btn-planner" class="tab-btn inactive">⏰ 讀書計畫</button>
+            <button id="tab-btn-notes" class="tab-btn inactive">📝 筆記工具</button>
+            <button id="tab-btn-voice" class="tab-btn inactive">🎙️ 語音筆記</button>
+            <button id="tab-btn-flashcards" class="tab-btn inactive">🎴 記憶卡片</button>
+            <button id="tab-btn-pomodoro" class="tab-btn inactive">⏱️ 番茄鐘</button>
+            <button id="tab-btn-stats" class="tab-btn inactive">📊 學習統計</button>
+            <button id="tab-btn-manager" class="tab-btn inactive">📂 資料管理</button>
+        </nav>
+
+        <hr class="my-6 border-slate-200" />
+
+        <!-- Guide Tab -->
+        <section id="tab-content-guide" class="tab-content active">
+            <h2 class="section-title">📚 為什麼需要學習系統？</h2>
+            <p class="text-slate-700 mb-4 leading-relaxed text-lg">
+                很多孩子非常認真，卻常常不知道該先念哪一科。這不是不努力，而是缺乏一張「學習地圖」。
+                有時大腦就像一間被書淹沒的倉庫，裡面什麼都有、卻找不到出口。本工具的目的，就是陪您或孩子建立一套「學習導航系統」，將迷茫轉為清晰。
+            </p>
+            
+            <h3 class="section-subtitle">🧠 大腦最高效的學習循環 (六大流程)</h3>
+            <div class="content-box flex flex-wrap gap-3 justify-center items-center">
+                <div class="flow-step bg-gradient-to-br from-blue-100 to-blue-200 text-blue-900 font-bold rounded-lg px-5 py-3 shadow-md">1. 輸入</div>
+                <div class="flow-arrow text-blue-400 text-3xl select-none">→</div>
+                <div class="flow-step bg-gradient-to-br from-blue-100 to-blue-200 text-blue-900 font-bold rounded-lg px-5 py-3 shadow-md">2. 理解</div>
+                <div class="flow-arrow text-blue-400 text-3xl select-none">→</div>
+                <div class="flow-step bg-gradient-to-br from-blue-100 to-blue-200 text-blue-900 font-bold rounded-lg px-5 py-3 shadow-md">3. 整理</div>
+                <div class="flow-arrow text-blue-400 text-3xl select-none">→</div>
+                <div class="flow-step bg-gradient-to-br from-blue-100 to-blue-200 text-blue-900 font-bold rounded-lg px-5 py-3 shadow-md">4. 練習</div>
+                <div class="flow-arrow text-blue-400 text-3xl select-none">→</div>
+                <div class="flow-step bg-gradient-to-br from-blue-100 to-blue-200 text-blue-900 font-bold rounded-lg px-5 py-3 shadow-md">5. 檢核</div>
+                <div class="flow-arrow text-blue-400 text-3xl select-none">→</div>
+                <div class="flow-step bg-gradient-to-br from-blue-100 to-blue-200 text-blue-900 font-bold rounded-lg px-5 py-3 shadow-md">6. 反思</div>
+            </div>
+            <p class="text-center text-sm text-slate-600 mt-3 font-medium">孩子不是不會學，只是沒有人陪他「看到整個流程」。</p>
+            
+            <h3 class="section-subtitle mt-8">🧩 學習系統的三層結構</h3>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="content-box">
+                    <div class="text-3xl mb-3">1️⃣</div>
+                    <strong class="text-blue-700 text-lg">基礎層：固定節奏</strong>
+                    <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+                        每天固定的學習時段（如晚餐後 7:00–8:00）。讓大腦習慣「時間到了就啟動」。
+                        <br /><strong class="text-blue-600">(使用「讀書計畫」和「番茄鐘」建立節奏)</strong>
+                    </p>
+                </div>
+                <div class="content-box">
+                    <div class="text-3xl mb-3">2️⃣</div>
+                    <strong class="text-blue-700 text-lg">整理層：筆記與分類</strong>
+                    <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+                        嘗試用「主題分類筆記」整理各科內容。每個主題一頁總覽、三個重點、五個例題。
+                        <br /><strong class="text-blue-600">(使用「知識盤點」、「筆記工具」和「語音筆記」整理)</strong>
+                    </p>
+                </div>
+                <div class="content-box">
+                    <div class="text-3xl mb-3">3️⃣</div>
+                    <strong class="text-blue-700 text-lg">輸出層：檢核與分享</strong>
+                    <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+                        每週一次「小老師任務」，挑一題講給同學聽、互相糾錯、互考。這是「鞏固→反思→再輸入」的橋樑。
+                        <br /><strong class="text-blue-600">(使用「記憶卡片」檢核知識)</strong>
+                    </p>
+                </div>
+            </div>
+            
+            <h3 class="section-subtitle mt-8">💡 家長/導師的角色：陪孩子搭建，而不是代做</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="content-box">
+                    <div class="text-2xl mb-2">🌱</div>
+                    <strong class="text-slate-800">給他明確邊界</strong>
+                    <p class="text-sm text-slate-600 mt-1">「這一週要自己安排複習進度表。」</p>
+                </div>
+                <div class="content-box">
+                    <div class="text-2xl mb-2">⏰</div>
+                    <strong class="text-slate-800">給他可預測節奏</strong>
+                    <p class="text-sm text-slate-600 mt-1">「週三晚餐後我們一起檢查一次。」</p>
+                </div>
+                <div class="content-box">
+                    <div class="text-2xl mb-2">💚</div>
+                    <strong class="text-slate-800">給他情緒安全感</strong>
+                    <p class="text-sm text-slate-600 mt-1">「你有做到一半就很好，我看到你的努力。」</p>
+                </div>
+                <div class="content-box">
+                    <div class="text-2xl mb-2">🎯</div>
+                    <strong class="text-slate-800">給他工具支持</strong>
+                    <p class="text-sm text-slate-600 mt-1">「我們一起用這個系統來組織學習吧！」</p>
+                </div>
+            </div>
+            
+            <div class="content-box mt-6 bg-gradient-to-br from-blue-50 to-purple-50">
+                <h4 class="font-bold text-lg text-blue-800 mb-3">🚀 快速開始指南</h4>
+                <ol class="list-decimal list-inside space-y-2 text-slate-700">
+                    <li><strong>知識盤點：</strong>先把所有要學的內容列出來，誠實標記熟練度</li>
+                    <li><strong>制定計畫：</strong>將「不會」和「半懂」的內容安排到每週計畫中</li>
+                    <li><strong>使用番茄鐘：</strong>25 分鐘專注學習，5 分鐘休息</li>
+                    <li><strong>製作筆記：</strong>用各種筆記模板整理學習內容，或用**語音筆記**快速記錄。使用**日記**或**讀書心得**等專業模板來組織思緒。</li>
+                    <li><strong>製作卡片：</strong>把重點做成記憶卡片反覆練習</li>
+                    <li><strong>查看統計：</strong>每週回顧學習數據，調整策略</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Knowledge Triage -->
+        <section id="tab-content-triage" class="tab-content">
+            <h2 class="section-title">🗺️ 知識盤點儀表板</h2>
+            <p class="mb-4 text-slate-700 text-lg leading-relaxed">
+                第一步：把所有要考的科目、章節、重點攤開。誠實分類「我會的」、「半懂的」、「完全不會的」。
+            </p>
+            
+            <div class="content-box mb-4">
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="md:col-span-2">
+                        <label for="topicInput" class="block text-sm font-semibold text-slate-700 mb-2">新增科目或章節</label>
+                        <input type="text" id="topicInput" class="note-input" placeholder="例如：數學 Ch.3、歷史 第一次世界大戰..." />
+                    </div>
+                    <div>
+                        <label for="statusSelect" class="block text-sm font-semibold text-slate-700 mb-2">熟練度</label>
+                        <select id="statusSelect" class="note-input">
+                            <option value="red">❌ 完全不會</option>
+                            <option value="yellow">⚠️ 半懂的</option>
+                            <option value="green">✅ 我會的</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="addTopicBtn" class="btn btn-primary mt-4">➕ 新增項目</button>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button class="btn btn-clear text-sm" onclick="filterKnowledge('all')">📋 全部顯示</button>
+                <button class="btn btn-clear text-sm" onclick="filterKnowledge('red')">❌ 只看不會的</button>
+                <button class="btn btn-clear text-sm" onclick="filterKnowledge('yellow')">⚠️ 只看半懂的</button>
+                <button class="btn btn-clear text-sm" onclick="filterKnowledge('green')">✅ 只看會的</button>
+                <button class="btn btn-info text-sm" onclick="exportKnowledge()">💾 匯出清單</button>
+            </div>
+
+            <div id="knowledgeListContainer" role="list"></div>
+            <button id="clearTriageBtn" class="btn btn-danger mt-4 text-sm">🗑️ 清空所有項目</button>
+        </section>
+
+        <!-- Study Planner -->
+        <section id="tab-content-planner" class="tab-content">
+            <h2 class="section-title">⏰ 讀書計畫產生器</h2>
+            <p class="text-slate-700 mb-4 text-lg leading-relaxed">
+                將「知識盤點」中 ❌ 和 ⚠️ 的項目，安排到下方時間表。別忘記每天預留「抓漏時間」！
+            </p>
+            
+            <div class="content-box mb-4">
+                <div class="grid md:grid-cols-4 gap-4">
+                    <div class="md:col-span-2">
                         <label for="taskInput" class="block text-sm font-semibold text-slate-700 mb-2">任務內容</label>
                         <input type="text" id="taskInput" class="note-input" placeholder="例如：複習數學 Ch.3、寫英文習作 p.20-25..." />
                     </div>
