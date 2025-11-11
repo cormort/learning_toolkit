@@ -301,57 +301,76 @@ body.sidebar-collapsed .sidebar-icon {
     font-weight: 800;
     color: #1e3a8a;
     white-space: nowrap;
+    transition: justify-content 0.3s ease;
 }
 
 .sidebar-icon {
-    font-size: 1.3rem; /* 稍微縮小圖示 */
-    min-width: 40px;
+    font-size: 1.5rem; /* logo稍大一點 */
+    min-width: 40px;    /* 固定最小寬度，避免收合壓縮 */
     text-align: center;
 }
 
+.sidebar-text {
+    margin-left: 0.5rem;
+    transition: opacity 0.3s ease, width 0.3s ease;
+}
+
+/* 收合狀態只顯示 logo 並居中 */
+body.sidebar-collapsed .sidebar-title {
+    justify-content: center;
+}
+
+/* 收合狀態隱藏文字，防止漏字 */
+body.sidebar-collapsed .sidebar-text {
+    opacity: 0;
+    width: 0;
+    margin: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* Sidebar 按鈕 基本樣式 */
 .sidebar .tab-btn {
     display: flex;
     align-items: center;
     width: 100%;
-    padding: 0.65rem 0.75rem; /* 減少 padding */
+    padding: 0.65rem 0.75rem;
     font-weight: 600;
-    font-size: 0.9rem; /* 稍微縮小字體 */
+    font-size: 0.9rem;
     color: #475569;
     border-radius: 0.5rem;
     transition: all 0.2s ease;
     white-space: nowrap;
     justify-content: flex-start;
-}
-
-/* 18. 收合狀態的文字隱藏與優化 */
-body.sidebar-collapsed .sidebar-text {
-    opacity: 0;
-    pointer-events: none;
-    width: 0; /* 完全隱藏文字區域 */
-    overflow: hidden;
-}
-
-body.sidebar-collapsed .sidebar-title {
-    justify-content: center;
-    padding: 1rem 0;
-}
-
-/* 收合狀態下的按鈕樣式優化 */
-body.sidebar-collapsed .tab-btn {
-    justify-content: center !important;
-    padding: 0.75rem 0 !important;
-}
-
-body.sidebar-collapsed .sidebar-toggle-btn {
-    justify-content: center !important;
-    padding: 0.75rem 0 !important;
-}
-
-/* 收合狀態下圖示的 tooltip 提示 */
-body.sidebar-collapsed .tab-btn {
     position: relative;
 }
 
+/* 收合時 tab-btn 只顯示 icon 居中 */
+body.sidebar-collapsed .sidebar .tab-btn {
+    justify-content: center !important;
+    padding: 0.75rem 0 !important;
+}
+
+/* Icon 調整 */
+.sidebar-icon {
+    font-size: 1.3rem;
+    min-width: 40px;
+    text-align: center;
+    margin-right: 0.75rem;
+    transition: margin 0.3s ease;
+}
+
+/* 收合時移除右邊距 */
+body.sidebar-collapsed .sidebar-icon {
+    margin: 0;
+}
+
+/* 收合時文字隱藏 */
+body.sidebar-collapsed .tab-btn .sidebar-text {
+    display: none;
+}
+
+/* 收合狀態 tooltip 樣式 */
 body.sidebar-collapsed .tab-btn:hover::after {
     content: attr(data-tooltip);
     position: absolute;
@@ -374,32 +393,3 @@ body.sidebar-collapsed .tab-btn:hover::after {
 @keyframes tooltipFadeIn {
     to { opacity: 1; }
 }
-
-/* === 可選調整 === */
-
-/* 如果想要更窄的 sidebar (150px)，取消下面註解 */
-/*
-.sidebar {
-    width: 150px !important;
-}
-body.sidebar-collapsed .sidebar {
-    width: 64px !important;
-}
-@media (min-width: 1024px) {
-    .main-content {
-        margin-left: 150px !important;
-        width: calc(100% - 150px) !important;
-    }
-    body.sidebar-collapsed .main-content {
-        margin-left: 64px !important;
-        width: calc(100% - 64px) !important;
-    }
-}
-*/
-
-/* 如果想要完全移除左右邊距，取消下面註解 */
-/*
-.main-container {
-    padding: 0 !important;
-}
-*/
