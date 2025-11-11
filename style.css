@@ -199,9 +199,6 @@ h3.section-subtitle {
     transform: translateY(-2px);
 }
 
-/* ... [此處貼上您舊 style.css 中除了 body 和 .main-container 之外的所有其他樣式] ... */
-/* 例如：.knowledge-item, .planner-grid, .btn, .stat-card, .voice-note-container 等等 */
-
 /* --- 舊樣式貼上區 --- */
 .knowledge-item { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-radius: 0.75rem; margin-bottom: 0.75rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); gap: 1rem; flex-wrap: wrap; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); }
 .knowledge-item:hover { transform: translateX(4px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
