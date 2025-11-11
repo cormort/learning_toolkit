@@ -10,17 +10,25 @@
     width: 100%; /* 確保寬度 100% */
 }
 
-/* 2. 桌面版：預設狀態（sidebar 展開） */
-@media (min-width: 256px) {
+/* 2. 桌面版：預設狀態（sidebar 展開） - 提高斷點到更大螢幕 */
+@media (min-width: 1024px) {
     .main-content {
-        margin-left: 256px; /* 側邊欄寬度 */
-        width: calc(100% - 256px); /* 扣除 sidebar 寬度 */
+        margin-left: 200px; /* 調整側邊欄寬度為 200px */
+        width: calc(100% - 200px); /* 扣除 sidebar 寬度 */
     }
     
     /* sidebar 收合後，內容區自動擴展 */
     body.sidebar-collapsed .main-content {
-        margin-left: 80px; /* 收合後側邊欄寬度 */
-        width: calc(100% - 80px); /* 自動擴展寬度 */
+        margin-left: 64px; /* 調整收合後側邊欄寬度為 64px */
+        width: calc(100% - 64px); /* 自動擴展寬度 */
+    }
+}
+
+/* 中等螢幕（平板）：使用手機版佈局 */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .main-content {
+        margin-left: 0;
+        width: 100%;
     }
 }
 
