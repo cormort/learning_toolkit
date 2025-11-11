@@ -11,7 +11,7 @@
 }
 
 /* 2. 桌面版：預設狀態（sidebar 展開） */
-@media (min-width: 768px) {
+@media (min-width: 256px) {
     .main-content {
         margin-left: 256px; /* 側邊欄寬度 */
         width: calc(100% - 256px); /* 扣除 sidebar 寬度 */
