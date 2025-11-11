@@ -1,53 +1,83 @@
-/* === 右側內容區滿版修改 === */
+/* ====================================
+   完整的滿版佈局修改方案
+   ==================================== */
 
-/* 1. 主要內容區域 - 移除預設 padding，讓內容可以滿版 */
+/* 1. 縮小 Sidebar 寬度 */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 180px; /* 從 256px 縮小到 180px */
+    display: flex;
+    flex-direction: column;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+    z-index: 40;
+}
+
+/* 收合狀態更窄 */
+body.sidebar-collapsed .sidebar {
+    width: 60px; /* 從 80px 縮小到 60px */
+}
+
+/* 2. 主要內容區域配合 sidebar 寬度調整 */
 .main-content {
     flex: 1;
     overflow-y: auto;
     height: 100vh;
     transition: margin-left 0.3s ease-in-out;
-    padding: 0; /* 移除 padding */
-    width: 100%; /* 確保寬度 100% */
+    padding: 0; /* 移除預設 padding */
+    width: 100%;
 }
 
-/* 2. 桌面版：預設狀態（sidebar 展開） - 提高斷點到更大螢幕 */
+/* 3. 桌面版：只在較大螢幕顯示 sidebar */
 @media (min-width: 1024px) {
     .main-content {
-        margin-left: 200px; /* 調整側邊欄寬度為 200px */
-        width: calc(100% - 200px); /* 扣除 sidebar 寬度 */
+        margin-left: 180px; /* 對應 sidebar 寬度 */
+        width: calc(100% - 180px);
     }
     
     /* sidebar 收合後，內容區自動擴展 */
     body.sidebar-collapsed .main-content {
-        margin-left: 64px; /* 調整收合後側邊欄寬度為 64px */
-        width: calc(100% - 64px); /* 自動擴展寬度 */
+        margin-left: 60px;
+        width: calc(100% - 60px);
     }
 }
 
 /* 中等螢幕（平板）：使用手機版佈局 */
 @media (min-width: 768px) and (max-width: 1023px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    body.mobile-menu-open .sidebar {
+        transform: translateX(0);
+    }
+    
     .main-content {
         margin-left: 0;
         width: 100%;
     }
 }
 
-/* 3. 主容器完全滿版 */
+/* 4. 主容器完全滿版 - 上下無留白，左右保持呼吸空間 */
 .main-container {
     background: white;
-    box-shadow: none; /* 移除陰影 */
-    border-radius: 0; /* 移除圓角 */
-    max-width: 100%; /* 確保滿版 */
+    box-shadow: none;
+    border-radius: 0;
+    max-width: 100%; /* 移除最大寬度限制 */
     width: 100%;
     margin: 0;
-    padding: 1.5rem; /* 只保留內部呼吸空間 */
+    padding: 0 1.5rem; /* 只保留左右邊距 */
     display: flex;
     flex-direction: column;
-    min-height: 100vh; /* 至少佔滿整個視窗高度 */
+    min-height: 100vh;
     box-sizing: border-box;
 }
 
-/* 4. Tab 內容滿版 */
+/* 5. Tab 內容滿版 */
 .tab-content {
     display: none;
 }
@@ -66,7 +96,7 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* 5. 內容盒子滿版 */
+/* 6. 所有內容盒子滿版 */
 .content-box {
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
     border: 1px solid #e2e8f0;
@@ -79,15 +109,43 @@
     box-sizing: border-box;
 }
 
-/* 6. 計畫表格子響應式滿版 */
+/* 7. 計畫表格子響應式滿版 */
 .planner-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
     width: 100%;
 }
 
-/* 7. 筆記管理器滿版 */
+/* 8. 知識項目滿版 */
+.knowledge-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    border-radius: 0.75rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 1rem;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 9. 時間列表滿版 */
+.day-column {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 10. 筆記管理器滿版 */
 #notesManager {
     margin-top: 1rem;
     max-height: 400px;
@@ -100,7 +158,7 @@
     box-sizing: border-box;
 }
 
-/* 8. 生成的筆記區域滿版 */
+/* 11. 生成的筆記區域滿版 */
 #generatedNote {
     width: 100%;
     min-height: 350px;
@@ -116,11 +174,11 @@
     box-sizing: border-box;
 }
 
-/* 9. 語音筆記容器滿版 */
+/* 12. 語音筆記容器滿版 */
 .voice-note-container {
     display: flex;
     flex-direction: column;
-    align-items: stretch; /* 改為 stretch 讓子元素填滿寬度 */
+    align-items: stretch;
     gap: 1rem;
     width: 100%;
 }
@@ -138,7 +196,7 @@
     box-sizing: border-box;
 }
 
-/* 10. 確保所有輸入框滿版 */
+/* 13. 確保所有輸入框滿版 */
 .note-input {
     width: 100%;
     padding: 0.85rem;
@@ -151,7 +209,7 @@
     box-sizing: border-box;
 }
 
-/* 11. 進度條滿版 */
+/* 14. 進度條滿版 */
 .progress-bar {
     width: 100%;
     height: 1.5rem;
@@ -162,7 +220,7 @@
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* 12. 統計卡片網格滿版 */
+/* 15. 統計卡片網格滿版 */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -182,16 +240,39 @@
     box-sizing: border-box;
 }
 
-/* 13. 手機版調整 */
+/* 16. 手機版調整 */
 @media (max-width: 767px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    body.mobile-menu-open .sidebar {
+        transform: translateX(0);
+    }
+    
+    .mobile-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        padding: 0 1rem;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(8px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        z-index: 35;
+    }
+    
     .main-content {
-        padding-top: 64px; /* 避開手機版頂部 Header */
+        padding-top: 64px;
         margin-left: 0;
         width: 100%;
     }
     
     .main-container {
-        padding: 1rem; /* 手機版減少 padding */
+        padding: 0 1rem; /* 手機版減少左右邊距 */
         min-height: calc(100vh - 64px);
     }
     
@@ -200,48 +281,68 @@
     }
 }
 
-/* 14. 知識項目滿版 */
-.knowledge-item {
+/* 17. Sidebar 文字和圖示調整（配合較窄的寬度） */
+.sidebar-title {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 1.25rem;
-    border-radius: 0.75rem;
-    margin-bottom: 0.75rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    gap: 1rem;
-    flex-wrap: wrap;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    width: 100%;
-    box-sizing: border-box;
+    padding: 1rem 0.75rem; /* 減少左右 padding */
+    font-size: 1.1rem; /* 稍微縮小字體 */
+    font-weight: 800;
+    color: #1e3a8a;
+    white-space: nowrap;
 }
 
-/* 15. 時間列表滿版 */
-.day-column {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-radius: 1rem;
-    padding: 1.25rem;
-    border: 2px solid #e2e8f0;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    width: 100%;
-    box-sizing: border-box;
+.sidebar-icon {
+    font-size: 1.3rem; /* 稍微縮小圖示 */
+    min-width: 40px;
+    text-align: center;
 }
 
-/* === 可選：更極致的滿版效果 === */
-/* 如果想要內容完全貼邊，取消下面註解 */
+.sidebar .tab-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.65rem 0.75rem; /* 減少 padding */
+    font-weight: 600;
+    font-size: 0.9rem; /* 稍微縮小字體 */
+    color: #475569;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    justify-content: flex-start;
+}
+
+/* 18. 收合狀態的文字隱藏 */
+body.sidebar-collapsed .sidebar-text {
+    opacity: 0;
+    pointer-events: none;
+}
+
+body.sidebar-collapsed .sidebar-title {
+    justify-content: center;
+}
+
+/* === 可選調整 === */
+
+/* 如果想要更窄的 sidebar (150px)，取消下面註解 */
+/*
+.sidebar {
+    width: 150px !important;
+}
+body.sidebar-collapsed .sidebar {
+    width: 60px !important;
+}
+@media (min-width: 1024px) {
+    .main-content {
+        margin-left: 150px !important;
+        width: calc(100% - 150px) !important;
+    }
+}
+*/
+
+/* 如果想要完全移除左右邊距，取消下面註解 */
 /*
 .main-container {
     padding: 0 !important;
 }
-
-.content-box {
-    border-radius: 0;
-    margin: 0;
-}
 */
-
-/* === 上下滿版，左右留白 - 保持左右呼吸空間 === */
-.main-container {
-    padding: 0 1.5rem !important;
-}
