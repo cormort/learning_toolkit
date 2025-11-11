@@ -1,377 +1,107 @@
-/* ====================================
-   完整的滿版佈局修改方案
-   ==================================== */
+/* ============================================
+   UI 優化增強版 - 核心佈局已更新
+   ============================================ */
 
-/* 1. 縮小 Sidebar 寬度 */
+/* === 1. 整體配色與背景優化 === */
+body { 
+    font-family: 'Inter', 'Noto Sans TC', system-ui, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-attachment: fixed;
+}
+
+/* 
+==================================================================
+   ↓↓↓ 已替換為您提供的 Sidebar & Main Content 核心佈局 ↓↓↓
+==================================================================
+*/
+
+/* sidebar main修正版——覆蓋原 sidebar 程式段落 */
 .sidebar {
     position: fixed;
-    top: 0;
-    left: 0;
+    top: 0; left: 0;
     height: 100vh;
-    width: 180px; /* 從 256px 縮小到 180px */
+    width: 180px;
     display: flex;
     flex-direction: column;
-    background: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+    background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+    transition: width 0.3s;
     z-index: 40;
-    overflow: hidden; /* 防止收合時內容溢出 */
-}
-
-/* 收合狀態更窄且美化 */
-body.sidebar-collapsed .sidebar {
-    width: 64px; /* 從 80px 縮小到 64px，更符合圖示尺寸 */
-}
-
-/* 收合狀態下，確保圖示居中顯示 */
-body.sidebar-collapsed .sidebar .tab-btn {
-    justify-content: center;
-    padding: 0.75rem 0;
-}
-
-body.sidebar-collapsed .sidebar-icon {
-    margin: 0;
-}
-
-/* 2. 主要內容區域配合 sidebar 寬度調整 */
-.main-content {
-    flex: 1;
-    overflow-y: auto;
-    height: 100vh;
-    transition: margin-left 0.3s ease-in-out;
-    padding: 0; /* 移除預設 padding */
-    width: 100%;
-}
-
-/* 3. 桌面版：只在較大螢幕顯示 sidebar */
-@media (min-width: 1024px) {
-    .main-content {
-        margin-left: 180px; /* 對應 sidebar 寬度 */
-        width: calc(100% - 180px);
-    }
-    
-    /* sidebar 收合後，內容區自動擴展 */
-    body.sidebar-collapsed .main-content {
-        margin-left: 64px;
-        width: calc(100% - 64px);
-    }
-}
-
-/* 中等螢幕（平板）：使用手機版佈局 */
-@media (min-width: 768px) and (max-width: 1023px) {
-    .sidebar {
-        transform: translateX(-100%);
-    }
-    
-    body.mobile-menu-open .sidebar {
-        transform: translateX(0);
-    }
-    
-    .main-content {
-        margin-left: 0;
-        width: 100%;
-    }
-}
-
-/* 4. 主容器完全滿版 - 上下無留白，左右保持呼吸空間 */
-.main-container {
-    background: white;
-    box-shadow: none;
-    border-radius: 0;
-    max-width: 100%; /* 移除最大寬度限制 */
-    width: 100%;
-    margin: 0;
-    padding: 0 1.5rem; /* 只保留左右邊距 */
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    box-sizing: border-box;
-}
-
-/* 5. Tab 內容滿版 */
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    animation: fadeIn 0.5s ease-out;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* 6. 所有內容盒子滿版 */
-.content-box {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border: 1px solid #e2e8f0;
-    border-radius: 1rem;
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* 7. 計畫表格子響應式滿版 */
-.planner-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
-    width: 100%;
-}
-
-/* 8. 知識項目滿版 */
-.knowledge-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem;
-    border-radius: 0.75rem;
-    margin-bottom: 0.75rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    gap: 1rem;
-    flex-wrap: wrap;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* 9. 時間列表滿版 */
-.day-column {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-radius: 1rem;
-    padding: 1.25rem;
-    border: 2px solid #e2e8f0;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* 10. 筆記管理器滿版 */
-#notesManager {
-    margin-top: 1rem;
-    max-height: 400px;
-    overflow-y: auto;
-    border: 2px solid #e2e8f0;
-    border-radius: 1rem;
-    background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
-    padding: 1rem;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* 11. 生成的筆記區域滿版 */
-#generatedNote {
-    width: 100%;
-    min-height: 350px;
-    background: #fafcff;
-    border: 2px solid #e2e8f0;
-    border-radius: 0.75rem;
-    padding: 1.25rem;
-    font-family: 'Monaco', 'Menlo', monospace;
-    font-size: 0.9rem;
-    white-space: pre-wrap;
-    resize: vertical;
-    line-height: 1.6;
-    box-sizing: border-box;
-}
-
-/* 12. 語音筆記容器滿版 */
-.voice-note-container {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-    width: 100%;
-}
-
-.transcript-container {
-    width: 100%;
-    height: 40vh;
-    min-height: 300px;
-    border: 2px solid #e2e8f0;
-    border-radius: 1rem;
-    background-color: #f8fafc;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-    overflow-y: scroll;
-    padding: 1rem;
-    box-sizing: border-box;
-}
-
-/* 13. 確保所有輸入框滿版 */
-.note-input {
-    width: 100%;
-    padding: 0.85rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 0.75rem;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-    resize: vertical;
-    background: white;
-    box-sizing: border-box;
-}
-
-/* 14. 進度條滿版 */
-.progress-bar {
-    width: 100%;
-    height: 1.5rem;
-    background: #e2e8f0;
-    border-radius: 1rem;
     overflow: hidden;
-    position: relative;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* 15. 統計卡片網格滿版 */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    width: 100%;
-}
+/* 收合狀態 sidebar，寬度更小 */
+body.sidebar-collapsed .sidebar { width: 64px; }
 
-.stat-card {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-radius: 1rem;
-    padding: 1.5rem;
-    text-align: center;
-    border: 2px solid #e2e8f0;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* 16. 手機版調整 */
-@media (max-width: 767px) {
-    .sidebar {
-        transform: translateX(-100%);
-    }
-    
-    body.mobile-menu-open .sidebar {
-        transform: translateX(0);
-    }
-    
-    .mobile-header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 64px;
-        display: flex;
-        align-items: center;
-        padding: 0 1rem;
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(8px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        z-index: 35;
-    }
-    
-    .main-content {
-        padding-top: 64px;
-        margin-left: 0;
-        width: 100%;
-    }
-    
-    .main-container {
-        padding: 0 1rem; /* 手機版減少左右邊距 */
-        min-height: calc(100vh - 64px);
-    }
-    
-    .planner-grid {
-        grid-template-columns: 1fr; /* 手機版單欄顯示 */
-    }
-}
-
-/* 17. Sidebar 文字和圖示調整（配合較窄的寬度） */
+/* sidebar-logo與文字區修正，logo不壓縮，文字正確隱藏 */
 .sidebar-title {
     display: flex;
     align-items: center;
-    padding: 1rem 0.75rem; /* 減少左右 padding */
-    font-size: 1.1rem; /* 稍微縮小字體 */
+    padding: 1rem 0.75rem;
+    font-size: 1.1rem;
     font-weight: 800;
-    color: #1e3a8a;
+    color: white;
+    border-bottom: 2px solid rgba(255,255,255,0.2);
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
     white-space: nowrap;
-    transition: justify-content 0.3s ease;
+    transition: justify-content 0.3s;
 }
-
 .sidebar-icon {
-    font-size: 1.5rem; /* logo稍大一點 */
-    min-width: 40px;    /* 固定最小寬度，避免收合壓縮 */
+    font-size: 1.5rem;
+    min-width: 40px;
     text-align: center;
 }
-
 .sidebar-text {
     margin-left: 0.5rem;
-    transition: opacity 0.3s ease, width 0.3s ease;
+    transition: opacity 0.3s, width 0.3s;
 }
+/* 收合 logo只居中顯示，不漏字不壓縮 */
+body.sidebar-collapsed .sidebar-title { justify-content: center; }
+body.sidebar-collapsed .sidebar-text { opacity: 0; width: 0; margin: 0; pointer-events: none; overflow: hidden; }
 
-/* 收合狀態只顯示 logo 並居中 */
-body.sidebar-collapsed .sidebar-title {
-    justify-content: center;
-}
-
-/* 收合狀態隱藏文字，防止漏字 */
-body.sidebar-collapsed .sidebar-text {
-    opacity: 0;
-    width: 0;
-    margin: 0;
-    pointer-events: none;
-    overflow: hidden;
-}
-
-/* Sidebar 按鈕 基本樣式 */
-.sidebar .tab-btn {
+/* Sidebar 按鈕基本樣式與收合狀態修正 */
+.sidebar .tab-btn, .sidebar-toggle-btn {
     display: flex;
     align-items: center;
     width: 100%;
     padding: 0.65rem 0.75rem;
     font-weight: 600;
     font-size: 0.9rem;
-    color: #475569;
-    border-radius: 0.5rem;
-    transition: all 0.2s ease;
+    color: rgba(255,255,255,0.8);
+    border-radius: 0.75rem;
+    margin: 0.25rem 0.75rem;
+    transition: all 0.2s;
     white-space: nowrap;
     justify-content: flex-start;
+    background: none;
+    border: none;
+    cursor: pointer;
     position: relative;
 }
 
-/* 收合時 tab-btn 只顯示 icon 居中 */
-body.sidebar-collapsed .sidebar .tab-btn {
+.sidebar .tab-btn:hover, .sidebar-toggle-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.sidebar .tab-btn.active {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+}
+
+body.sidebar-collapsed .sidebar .tab-btn, body.sidebar-collapsed .sidebar-toggle-btn {
     justify-content: center !important;
     padding: 0.75rem 0 !important;
 }
+body.sidebar-collapsed .sidebar-icon { margin: 0; }
+body.sidebar-collapsed .tab-btn .sidebar-text,
+body.sidebar-collapsed .sidebar-toggle-btn .sidebar-text { display: none; }
 
-/* Icon 調整 */
-.sidebar-icon {
-    font-size: 1.3rem;
-    min-width: 40px;
-    text-align: center;
-    margin-right: 0.75rem;
-    transition: margin 0.3s ease;
-}
-
-/* 收合時移除右邊距 */
-body.sidebar-collapsed .sidebar-icon {
-    margin: 0;
-}
-
-/* 收合時文字隱藏 */
-body.sidebar-collapsed .tab-btn .sidebar-text {
-    display: none;
-}
-
-/* 收合狀態 tooltip 樣式 */
-body.sidebar-collapsed .tab-btn:hover::after {
+/* 收合狀態 tooltip */
+body.sidebar-collapsed .tab-btn:hover::after,
+body.sidebar-collapsed .sidebar-toggle-btn:hover::after {
     content: attr(data-tooltip);
     position: absolute;
     left: 100%;
@@ -387,27 +117,86 @@ body.sidebar-collapsed .tab-btn:hover::after {
     z-index: 1000;
     pointer-events: none;
     opacity: 0;
-    animation: tooltipFadeIn 0.2s ease forwards;
+    animation: tooltipFadeIn 0.2s forwards;
 }
+@keyframes tooltipFadeIn { to{opacity:1;} }
 
-@keyframes tooltipFadeIn {
-    to { opacity: 1; }
-}
-/* ============================================
-   UI 優化增強版 - 提升視覺層次與使用體驗
-   ============================================ */
-
-/* === 1. 整體配色與背景優化 === */
-body { 
-    font-family: 'Inter', 'Noto Sans TC', system-ui, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    background-attachment: fixed;
-}
-
-/* 主內容區加上半透明背景 */
+/* ----- main-content覆蓋修正，確保 sidebar 右側全白底 ----- */
 .main-content {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    min-height: 100vh;
+    margin-left: 180px;
+    background: #fff;
+    flex: 1 1 0%;
+    width: calc(100% - 180px);
+    overflow-y: auto;
+    transition: margin-left 0.3s, width 0.3s;
+    box-sizing: border-box;
+    padding: 0;
+}
+body.sidebar-collapsed .main-content {
+    margin-left: 64px;
+    width: calc(100% - 64px);
+}
+
+/* 響應式與原設計融合 - 平板/手機版布局保持你的原邏輯 */
+@media (min-width: 1024px) {
+    .main-content { margin-left: 180px; width: calc(100% - 180px); }
+    body.sidebar-collapsed .main-content { margin-left: 64px; width: calc(100% - 64px); }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+    .sidebar { transform: translateX(-100%); }
+    body.mobile-menu-open .sidebar { transform: translateX(0);}
+    .main-content { margin-left: 0; width: 100%;}
+}
+@media (max-width: 767px) {
+    .sidebar { transform: translateX(-100%);}
+    body.mobile-menu-open .sidebar { transform: translateX(0);}
+    .main-content { margin-left: 0; width: 100%; padding-top: 64px;}
+    .mobile-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        padding: 0 1rem;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(8px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        z-index: 35;
+    }
+}
+
+/* 
+==================================================================
+   ↑↑↑ 核心佈局更新完成 ↑↑↑
+   ↓↓↓ 保留所有其他的 UI 美化樣式 ↓↓↓
+==================================================================
+*/
+
+/* 主容器滿版 */
+.main-container {
+    width: 100%;
+    margin: 0;
+    padding: 2rem 2.5rem; /* 內邊距，讓內容有呼吸空間 */
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    box-sizing: border-box;
+}
+
+/* Tab 內容滿版 */
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    animation: fadeIn 0.5s ease-out;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* === 2. 標題樣式現代化 === */
@@ -416,7 +205,7 @@ h2.section-title {
     font-weight: 800;
     color: #1e293b;
     margin-bottom: 1.5rem;
-    border-left: none; /* 移除舊的左邊框 */
+    border-left: none;
     padding-left: 0;
     background: none;
     padding-top: 0;
@@ -425,8 +214,6 @@ h2.section-title {
     position: relative;
     display: inline-block;
 }
-
-/* 為標題加上漸變底線 */
 h2.section-title::after {
     content: '';
     position: absolute;
@@ -437,7 +224,6 @@ h2.section-title::after {
     background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
     border-radius: 2px;
 }
-
 h3.section-subtitle {
     font-size: 1.4rem;
     font-weight: 700;
@@ -461,7 +247,6 @@ h3.section-subtitle {
     position: relative;
     overflow: hidden;
 }
-
 .content-box::before {
     content: '';
     position: absolute;
@@ -474,11 +259,9 @@ h3.section-subtitle {
     transform-origin: left;
     transition: transform 0.3s ease;
 }
-
 .content-box:hover::before {
     transform: scaleX(1);
 }
-
 .content-box:hover {
     box-shadow: 0 8px 30px rgba(59, 130, 246, 0.15);
     transform: translateY(-4px);
@@ -499,7 +282,6 @@ h3.section-subtitle {
     position: relative;
     overflow: hidden;
 }
-
 .knowledge-item::before {
     content: '';
     position: absolute;
@@ -509,30 +291,24 @@ h3.section-subtitle {
     width: 4px;
     transition: width 0.3s ease;
 }
-
 .knowledge-item.status-green::before { background: #10b981; }
 .knowledge-item.status-yellow::before { background: #f59e0b; }
 .knowledge-item.status-red::before { background: #ef4444; }
-
 .knowledge-item:hover::before {
     width: 8px;
 }
-
 .knowledge-item:hover {
     transform: translateX(8px);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
-
 .knowledge-item.status-green {
     background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
     border: 1px solid #86efac;
 }
-
 .knowledge-item.status-yellow {
     background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
     border: 1px solid #fcd34d;
 }
-
 .knowledge-item.status-red {
     background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
     border: 1px solid #fca5a5;
@@ -555,7 +331,6 @@ h3.section-subtitle {
     align-items: center;
     gap: 0.5rem;
 }
-
 .btn::before {
     content: '';
     position: absolute;
@@ -568,76 +343,61 @@ h3.section-subtitle {
     transform: translate(-50%, -50%);
     transition: width 0.6s, height 0.6s;
 }
-
 .btn:active::before {
     width: 300px;
     height: 300px;
 }
-
 .btn:hover {
     transform: translateY(-2px);
 }
-
 .btn:active {
     transform: translateY(0);
 }
-
 .btn-primary {
     background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     color: white;
 }
-
 .btn-primary:hover {
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
 }
-
 .btn-secondary {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
 }
-
 .btn-secondary:hover {
     background: linear-gradient(135deg, #059669 0%, #047857 100%);
     box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
 }
-
 .btn-danger {
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     color: white;
 }
-
 .btn-danger:hover {
     background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
     box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
 }
-
 .btn-info {
     background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
     color: white;
 }
-
 .btn-info:hover {
     background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
     box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
 }
-
 .btn-warning {
     background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
     color: white;
 }
-
 .btn-warning:hover {
     background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
     box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
 }
-
 .btn-clear {
     background: white;
     color: #64748b;
     border: 2px solid #e2e8f0;
 }
-
 .btn-clear:hover {
     background: #f8fafc;
     border-color: #cbd5e1;
@@ -650,7 +410,6 @@ h3.section-subtitle {
     gap: 1.25rem;
     width: 100%;
 }
-
 .day-column {
     background: white;
     border-radius: 1.25rem;
@@ -659,13 +418,11 @@ h3.section-subtitle {
     transition: all 0.3s ease;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
-
 .day-column:hover {
     border-color: #3b82f6;
     box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
     transform: translateY(-4px);
 }
-
 .day-header {
     font-size: 1.35rem;
     font-weight: 700;
@@ -677,7 +434,6 @@ h3.section-subtitle {
     padding-left: 0.75rem;
     border-radius: 0.5rem 0.5rem 0 0;
 }
-
 .task-item {
     display: flex;
     align-items: center;
@@ -694,11 +450,21 @@ h3.section-subtitle {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     border-left: 3px solid transparent;
 }
-
 .task-item:hover {
     background: #eff6ff;
     transform: translateX(6px);
     border-left-color: #3b82f6;
+}
+.task-item.is-buffer {
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+    border-left: 3px solid #eab308;
+    color: #854d0e;
+    font-weight: 600;
+}
+.task-item.completed {
+    text-decoration: line-through;
+    color: #94a3b8;
+    opacity: 0.6;
 }
 
 /* === 7. 輸入框優化 === */
@@ -713,7 +479,6 @@ h3.section-subtitle {
     background: white;
     font-family: inherit;
 }
-
 .note-input:focus {
     outline: none;
     border-color: #3b82f6;
@@ -733,7 +498,6 @@ h3.section-subtitle {
     position: relative;
     overflow: hidden;
 }
-
 .stat-card::before {
     content: '';
     position: absolute;
@@ -743,12 +507,10 @@ h3.section-subtitle {
     height: 4px;
     background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
 }
-
 .stat-card:hover {
     transform: translateY(-6px);
     box-shadow: 0 12px 32px rgba(59, 130, 246, 0.2);
 }
-
 .stat-number {
     font-size: 3rem;
     font-weight: 800;
@@ -758,7 +520,6 @@ h3.section-subtitle {
     background-clip: text;
     margin-bottom: 0.5rem;
 }
-
 .stat-label {
     font-size: 1rem;
     color: #64748b;
@@ -779,7 +540,12 @@ h3.section-subtitle {
     background-clip: text;
     text-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
 }
-
+.timer-controls {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
 .progress-bar {
     width: 100%;
     height: 2rem;
@@ -789,7 +555,6 @@ h3.section-subtitle {
     position: relative;
     box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
 }
-
 .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
@@ -799,7 +564,6 @@ h3.section-subtitle {
     position: relative;
     overflow: hidden;
 }
-
 .progress-fill::after {
     content: '';
     position: absolute;
@@ -810,7 +574,6 @@ h3.section-subtitle {
     background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
     animation: shimmer 2s infinite;
 }
-
 @keyframes shimmer {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
@@ -823,7 +586,6 @@ h3.section-subtitle {
     min-height: 350px;
     cursor: pointer;
 }
-
 .flashcard-inner {
     position: relative;
     width: 100%;
@@ -832,11 +594,9 @@ h3.section-subtitle {
     transition: transform 0.6s;
     transform-style: preserve-3d;
 }
-
 .flashcard.flipped .flashcard-inner {
     transform: rotateY(180deg);
 }
-
 .flashcard-front, .flashcard-back {
     position: absolute;
     width: 100%;
@@ -853,54 +613,31 @@ h3.section-subtitle {
     font-weight: 600;
     text-align: center;
 }
-
 .flashcard-front {
     background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     color: white;
 }
-
 .flashcard-back {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
     transform: rotateY(180deg);
 }
 
-/* === 11. 側邊欄優化 === */
-.sidebar {
-    background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
-}
-
-.sidebar-title {
-    color: white;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
-}
-
-.sidebar .tab-btn {
-    color: rgba(255, 255, 255, 0.8);
-    border-radius: 0.75rem;
-    margin: 0.25rem 0.75rem;
-}
-
-.sidebar .tab-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: white;
-}
-
-.sidebar .tab-btn.active {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: white;
-    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
-}
-
-/* === 12. Modal 優化 === */
+/* === 11. Modal 優化 === */
 .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10001;
+    animation: fadeIn 0.3s ease;
 }
-
 .modal {
     background: white;
     padding: 2.5rem;
@@ -910,68 +647,50 @@ h3.section-subtitle {
     overflow-y: auto;
     box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
 }
+@keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+.hidden { display: none !important; }
 
-/* === 13. 響應式優化 === */
+/* === 12. 響應式優化 === */
 @media (max-width: 767px) {
+    .main-container {
+        padding: 1.5rem 1rem; /* 手機版內邊距 */
+    }
     h2.section-title {
         font-size: 1.65rem;
     }
-    
     .timer-display {
         font-size: 3.5rem;
     }
-    
     .stat-number {
         font-size: 2.25rem;
     }
-    
     .btn {
         padding: 0.75rem 1.25rem;
         font-size: 0.9rem;
     }
-    
     .content-box {
         padding: 1.5rem;
     }
 }
 
-/* === 14. 滾動條美化 === */
+/* === 13. 滾動條美化 === */
 ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
 }
-
 ::-webkit-scrollbar-track {
     background: #f1f5f9;
     border-radius: 10px;
 }
-
 ::-webkit-scrollbar-thumb {
     background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
     border-radius: 10px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
 }
 
-/* === 15. 動畫增強 === */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.tab-content.active {
-    animation: fadeIn 0.5s ease-out;
-}
-
-/* === 16. 狀態按鈕美化 === */
+/* === 14. 狀態按鈕美化 === */
 .status-btn {
     border: none;
     background: white;
@@ -983,13 +702,11 @@ h3.section-subtitle {
     border-radius: 0.75rem;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
-
 .status-btn:hover {
     opacity: 1;
     transform: scale(1.25) rotate(10deg);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
-
 .btn-delete {
     background: linear-gradient(135deg, #fee2e2 0%, #fca5a5 100%);
     color: #b91c1c;
@@ -1003,10 +720,40 @@ h3.section-subtitle {
     transition: all 0.3s ease;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
-
 .btn-delete:hover {
     opacity: 1;
     background: linear-gradient(135deg, #fca5a5 0%, #f87171 100%);
     transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
+
+/* === 15. 語音筆記與其他模組樣式 (保留) === */
+#generatedNote { width: 100%; min-height: 350px; background: #fafcff; border: 2px solid #e2e8f0; border-radius: 0.75rem; padding: 1.25rem; font-family: 'Monaco', 'Menlo', monospace; font-size: 0.9rem; white-space: pre-wrap; resize: vertical; line-height: 1.6; }
+.voice-note-container { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.transcript-container { width: 100%; height: 40vh; min-height: 300px; border: 2px solid #e2e8f0; border-radius: 1rem; background-color: #f8fafc; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); overflow-y: scroll; padding: 1rem; }
+#transcript-output { white-space: pre-wrap; word-wrap: break-word; font-size: 1rem; line-height: 1.7; font-family: 'Monaco', 'Menlo', 'Courier New', monospace; color: #334155; }
+#transcript-output .interim { color: #94a3b8; font-style: italic; }
+#transcript-output .placeholder { color: #94a3b8; }
+.voice-settings { display: flex; align-items: center; gap: 1rem; background: #f1f5f9; padding: 0.75rem 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; flex-wrap: wrap; }
+.voice-settings label { color: #1e3a8a; font-weight: 600; font-size: 0.9rem; }
+.voice-settings select { padding: 0.5rem 1rem; font-size: 0.9rem; border: 2px solid #cbd5e1; border-radius: 0.5rem; background: white; cursor: pointer; }
+.voice-controls { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+.voice-controls .btn { min-width: 150px; text-align: center; }
+.voice-controls .btn.listening::after { content: '●'; margin-left: 0.5rem; color: #ef4444; animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.warning-notice { background: #fefce8; color: #854d0e; padding: 0.75rem 1.25rem; border-radius: 0.75rem; font-size: 0.9rem; font-weight: 500; text-align: center; width: 100%; border: 1px solid #fde047; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+.privacy-notice details { border: 1px solid #e2e8f0; border-radius: 0.75rem; background: #f8fafc; }
+.privacy-notice summary { padding: 0.75rem 1.25rem; font-weight: bold; cursor: pointer; outline: none; color: #334155; }
+.privacy-notice .content { padding: 0 1.25rem 1.25rem 1.25rem; line-height: 1.6; color: #475569; font-size: 0.9rem; }
+.privacy-notice h3 { margin-top: 1rem; margin-bottom: 0.5rem; color: #1e40af; font-weight: 600; }
+.privacy-notice ul { padding-left: 1.25rem; margin: 0; }
+.privacy-notice ul li { margin-bottom: 0.5rem; }
+.privacy-notice ul li.safe::before { content: '✅ '; }
+.privacy-notice ul li.unsafe::before { content: '❌ '; }
+.privacy-notice strong { color: #be123c; font-weight: 700; }
+#notesManager { margin-top: 1rem; max-height: 400px; overflow-y: auto; border: 2px solid #e2e8f0; border-radius: 1rem; background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%); padding: 1rem; }
+.note-item { border-bottom: 1px solid #e2e8f0; padding: 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease; border-radius: 0.5rem; margin-bottom: 0.5rem; }
+.note-item:hover { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); transform: translateX(4px); border-color: transparent; }
+.note-title { font-weight: 700; color: #1e40af; font-size: 1.05rem; }
+.note-tags { color: #7c3aed; font-size: 0.85rem; margin-left: 0.75rem; white-space: nowrap; font-weight: 500; }
+.note-date { font-size: 0.8rem; color: #64748b; font-weight: 500; }
