@@ -15,11 +15,22 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
     z-index: 40;
+    overflow: hidden; /* 防止收合時內容溢出 */
 }
 
-/* 收合狀態更窄 */
+/* 收合狀態更窄且美化 */
 body.sidebar-collapsed .sidebar {
-    width: 60px; /* 從 80px 縮小到 60px */
+    width: 64px; /* 從 80px 縮小到 64px，更符合圖示尺寸 */
+}
+
+/* 收合狀態下，確保圖示居中顯示 */
+body.sidebar-collapsed .sidebar .tab-btn {
+    justify-content: center;
+    padding: 0.75rem 0;
+}
+
+body.sidebar-collapsed .sidebar-icon {
+    margin: 0;
 }
 
 /* 2. 主要內容區域配合 sidebar 寬度調整 */
@@ -41,8 +52,8 @@ body.sidebar-collapsed .sidebar {
     
     /* sidebar 收合後，內容區自動擴展 */
     body.sidebar-collapsed .main-content {
-        margin-left: 60px;
-        width: calc(100% - 60px);
+        margin-left: 64px;
+        width: calc(100% - 64px);
     }
 }
 
@@ -312,14 +323,56 @@ body.sidebar-collapsed .sidebar {
     justify-content: flex-start;
 }
 
-/* 18. 收合狀態的文字隱藏 */
+/* 18. 收合狀態的文字隱藏與優化 */
 body.sidebar-collapsed .sidebar-text {
     opacity: 0;
     pointer-events: none;
+    width: 0; /* 完全隱藏文字區域 */
+    overflow: hidden;
 }
 
 body.sidebar-collapsed .sidebar-title {
     justify-content: center;
+    padding: 1rem 0;
+}
+
+/* 收合狀態下的按鈕樣式優化 */
+body.sidebar-collapsed .tab-btn {
+    justify-content: center !important;
+    padding: 0.75rem 0 !important;
+}
+
+body.sidebar-collapsed .sidebar-toggle-btn {
+    justify-content: center !important;
+    padding: 0.75rem 0 !important;
+}
+
+/* 收合狀態下圖示的 tooltip 提示 */
+body.sidebar-collapsed .tab-btn {
+    position: relative;
+}
+
+body.sidebar-collapsed .tab-btn:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: #1e3a8a;
+    color: white;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0;
+    animation: tooltipFadeIn 0.2s ease forwards;
+}
+
+@keyframes tooltipFadeIn {
+    to { opacity: 1; }
 }
 
 /* === 可選調整 === */
@@ -330,12 +383,16 @@ body.sidebar-collapsed .sidebar-title {
     width: 150px !important;
 }
 body.sidebar-collapsed .sidebar {
-    width: 60px !important;
+    width: 64px !important;
 }
 @media (min-width: 1024px) {
     .main-content {
         margin-left: 150px !important;
         width: calc(100% - 150px) !important;
+    }
+    body.sidebar-collapsed .main-content {
+        margin-left: 64px !important;
+        width: calc(100% - 64px) !important;
     }
 }
 */
