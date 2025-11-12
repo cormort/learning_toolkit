@@ -14,37 +14,31 @@ let timerState = {
     pomodoroCount: 0
 };
 
-// ===== 側邊欄與響應式佈局控制 =====
+// ===== 核心：當 DOM 載入完成後執行所有初始化 =====
 document.addEventListener('DOMContentLoaded', () => {
+    // --- 側邊欄與響應式佈局控制 ---
     const sidebarToggle = document.getElementById('sidebar-toggle');
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const sidebarOverlay = document.getElementById('sidebar-overlay');
 
-    // 檢查並應用側邊欄收合狀態
     if (ls.getItem('sidebarCollapsed') === 'true') {
         document.body.classList.add('sidebar-collapsed');
     }
-
-    // 桌面版收合/展開
     sidebarToggle.addEventListener('click', () => {
         document.body.classList.toggle('sidebar-collapsed');
         ls.setItem('sidebarCollapsed', document.body.classList.contains('sidebar-collapsed'));
     });
-
-    // 手機版選單開關
     mobileMenuBtn.addEventListener('click', () => {
         document.body.classList.add('mobile-menu-open');
         sidebarOverlay.classList.remove('hidden');
     });
-
     const closeMobileMenu = () => {
         document.body.classList.remove('mobile-menu-open');
         sidebarOverlay.classList.add('hidden');
     };
-
     sidebarOverlay.addEventListener('click', closeMobileMenu);
     
-    // Tab切換
+    // --- Tab 切換邏輯 ---
     const tabs = {
         guide: 'tab-content-guide',
         triage: 'tab-content-triage',
@@ -54,7 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
         flashcards: 'tab-content-flashcards',
         pomodoro: 'tab-content-pomodoro',
         stats: 'tab-content-stats',
-        manager: 'tab-content-manager'
+        manager: 'tab-content-manager',
+        pdf: 'tab-content-pdf' // **修正點：已加入 PDF 分頁**
     };
 
     window.setActiveTab = function(activeName) {
@@ -69,12 +64,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (activeName === 'stats') updateStats();
         if (activeName === 'manager') renderNotesManager();
-
         if (activeName !== 'voice' && window.voiceNoteModule && window.voiceNoteModule.isRecognizing()) {
             window.voiceNoteModule.stopRecognition();
         }
-        
-        // 在手機上點擊後自動關閉選單
         if (window.innerWidth < 768) {
             closeMobileMenu();
         }
@@ -87,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 初始化
+    // --- 各模組初始化 ---
     renderKnowledgeList();
     renderPlanner();
     renderFlashcardList();
@@ -95,10 +87,55 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.voiceNoteModule) {
         window.voiceNoteModule.init();
     }
-    setActiveTab('guide');
-    
     checkPomodoroDate();
+    
+    // --- PDF 閱讀器整合功能 ---
+    const pdfUploadInput = document.getElementById('pdf-upload-input');
+    const notesTextarea = document.getElementById('pdf-notes-textarea');
+    let pdfViewerIframe = null; 
+
+    if (pdfUploadInput && notesTextarea) {
+        pdfUploadInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file || file.type !== 'application/pdf') {
+                alert('請選擇一個有效的 PDF 檔案！');
+                return;
+            }
+            pdfViewerIframe = document.getElementById('pdf-viewer-iframe');
+            if (!pdfViewerIframe || !pdfViewerIframe.contentWindow) {
+                alert('PDF 閱讀器元件尚未準備好，請稍後再試。');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const pdfData = e.target.result;
+                console.log('正在傳送 PDF 資料到 iframe...');
+                pdfViewerIframe.contentWindow.postMessage({
+                    type: 'LOAD_PDF',
+                    data: pdfData
+                }, 'https://cormort.github.io');
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        window.addEventListener('message', (event) => {
+            if (event.origin !== 'https://cormort.github.io') {
+                return;
+            }
+            const message = event.data;
+            if (message && message.type === 'TEXT_SELECTED' && message.data) {
+                const currentNotes = notesTextarea.value;
+                const timestamp = new Date().toLocaleString('zh-TW', { hour12: false });
+                notesTextarea.value = `${currentNotes}\n--- [${timestamp}] ---\n${message.data.trim()}\n`;
+                notesTextarea.scrollTop = notesTextarea.scrollHeight;
+            }
+        });
+    }
+
+    // --- 預設顯示第一個分頁 ---
+    setActiveTab('guide');
 });
+
 // ===== 知識盤點 =====
 function renderKnowledgeList() {
     const container = document.getElementById('knowledgeListContainer');
@@ -136,6 +173,7 @@ document.getElementById('clearTriageBtn')?.addEventListener('click', () => {
     if (confirm('您確定要清空所有知識盤點項目嗎？此動作無法復原。')) { knowledgeList = []; ls.setItem('knowledgeList', JSON.stringify(knowledgeList)); renderKnowledgeList(); }
 });
 function exportKnowledge() { const text = knowledgeList.map(i => `${i.topic}\t${i.status}`).join('\n'); downloadFile('知識盤點.txt', text); }
+
 // ===== 讀書計畫 =====
 function renderPlanner() {
     Object.keys(planner).forEach(day => {
@@ -169,6 +207,7 @@ document.getElementById('clearPlannerBtn')?.addEventListener('click', () => {
     if (confirm('您確定要清空本週所有計畫嗎？此動作無法復原。')) { planner = {"mon":[], "tue":[], "wed":[], "thu":[], "fri":[], "sat":[], "sun":[]}; ls.setItem('studyPlanner', JSON.stringify(planner)); renderPlanner(); }
 });
 function exportPlanner() { const days = {mon:'一', tue:'二', wed:'三', thu:'四', fri:'五', sat:'六', sun:'日'}; let text = '本週讀書計畫\n\n'; Object.keys(planner).forEach(day => { text += `星期${days[day]}:\n`; planner[day].forEach(task => { text += `  ${task.completed ? '☑' : '☐'} ${task.text}${task.isBuffer ? ' (抓漏時間)' : ''}\n`; }); text += '\n'; }); downloadFile('讀書計畫.txt', text); }
+
 // ===== 筆記產生器 =====
 const noteTemplateSelect = document.getElementById('noteTemplateSelect');
 const generateNoteBtn = document.getElementById('generateNoteBtn');
@@ -185,7 +224,6 @@ if (noteTemplateSelect) {
         else if (selected === 'bujo' || selected === 'diary') { const dateField = selected === 'bujo' ? 'noteBujoDate' : 'noteDiaryDate'; document.getElementById(dateField).value = getTodayDate(); }
     });
 }
-
 if (generateNoteBtn) {
     generateNoteBtn.addEventListener('click', () => {
         const tpl = noteTemplateSelect.value;
@@ -205,6 +243,7 @@ if (generateNoteBtn) {
 copyNoteBtn?.addEventListener('click', () => { if (!generatedNote.value) { alert('請先產生筆記！'); return; } navigator.clipboard.writeText(generatedNote.value).then(() => { alert('📋 筆記已複製到剪貼簿！'); }); });
 document.getElementById('clearNoteBtn')?.addEventListener('click', () => { generatedNote.value = ''; });
 function addNoteToStorage(meta, content) { notesStorage.push({ id: meta.id, title: meta.title || '無標題', tags: meta.tags || [], template: meta.template, content: content, created: meta.date || new Date().toISOString(), lastModified: new Date().toISOString(), important: false }); ls.setItem('notesStorage', JSON.stringify(notesStorage)); }
+
 // ===== 語音筆記模組 =====
 window.voiceNoteModule = (function() {
     const UIElements = { transcript: document.getElementById('transcript-output'), transcriptContainer: document.getElementById('transcriptContainer-voice'), controlBtn: document.getElementById('controlBtn-voice'), exportBtn: document.getElementById('exportBtn-voice'), copyBtn: document.getElementById('copyBtn-voice'), sendToNoteBtn: document.getElementById('sendToNoteBtn-voice'), languageSelector: document.getElementById('languageSelector-voice'), };
@@ -231,6 +270,7 @@ window.voiceNoteModule = (function() {
     function createFileName(start, end) { const date = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`; const startTimeStr = `${String(start.getHours()).padStart(2, '0')}-${String(start.getMinutes()).padStart(2, '0')}`; const endTimeStr = `${String(end.getHours()).padStart(2, '0')}-${String(end.getMinutes()).padStart(2, '0')}`; return `語音筆記_${date}_${startTimeStr}_to_${endTimeStr}.txt`; }
     return { init, stopRecognition, isRecognizing: () => state.isRecognizing };
 })();
+
 // ===== 記憶卡片 =====
 function renderFlashcardList() {
     const list = document.getElementById('flashcardList');
@@ -328,6 +368,7 @@ function sendNotification(title, body) { if ('Notification' in window) { if (Not
 document.getElementById('notificationEnabled')?.addEventListener('change', function() { if (this.checked && 'Notification' in window && Notification.permission === 'default') { Notification.requestPermission(); } });
 function checkPomodoroDate() { const today = getTodayDate(); if (pomodoroStats.lastDate !== today) { pomodoroStats.today = 0; pomodoroStats.todayStudy = 0; pomodoroStats.lastDate = today; ls.setItem('pomodoroStats', JSON.stringify(pomodoroStats)); } }
 function playSound() { const audioContext = new (window.AudioContext || window.webkitAudioContext)(); const oscillator = audioContext.createOscillator(); oscillator.connect(audioContext.destination); oscillator.frequency.value = 800; oscillator.start(); oscillator.stop(audioContext.currentTime + 0.2); }
+
 // ===== 統計 =====
 function updateStats() {
     const total = knowledgeList.length;
@@ -529,69 +570,3 @@ function getTodayDate() { const d = new Date(); return `${d.getFullYear()}-${Str
 function downloadFile(filename, content) { const blob = new Blob([content], { type: 'text/plain;charset=utf-8' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url); }
 function createModal() { const overlay = document.createElement('div'); overlay.className = 'modal-overlay'; overlay.onclick = (e) => { if (e.target === overlay) closeModal(); }; const modal = document.createElement('div'); modal.className = 'modal'; overlay.appendChild(modal); document.body.appendChild(overlay); window.currentModal = overlay; return modal; }
 function closeModal() { if (window.currentModal) { document.body.removeChild(window.currentModal); window.currentModal = null; } }
-// ===================================================================
-// ========== START: PDF 閱讀器整合功能 (新增於檔案底部) ==========
-// ===================================================================
-document.addEventListener('DOMContentLoaded', () => {
-    // 延遲獲取元素，確保在 tab 切換後元素可見
-    // 因為您的 tab-content 預設是 display: none，直接獲取 contentWindow 可能為 null
-    const pdfTabButton = document.getElementById('tab-btn-pdf');
-    let pdfViewerIframe = null; // 先宣告變數
-
-    if (pdfTabButton) {
-        // 監聽 PDF 上傳事件
-        const pdfUploadInput = document.getElementById('pdf-upload-input');
-        
-        pdfUploadInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (!file || file.type !== 'application/pdf') {
-                alert('請選擇一個有效的 PDF 檔案！');
-                return;
-            }
-
-            // 在這裡才獲取 iframe，確保它已經被渲染
-            pdfViewerIframe = document.getElementById('pdf-viewer-iframe');
-            
-            if (!pdfViewerIframe || !pdfViewerIframe.contentWindow) {
-                alert('PDF 閱讀器元件尚未準備好，請稍後再試。');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const pdfData = e.target.result; // 檔案的 ArrayBuffer
-                
-                console.log('正在傳送 PDF 資料到 iframe...');
-                // 發送訊息到 iframe
-                pdfViewerIframe.contentWindow.postMessage({
-                    type: 'LOAD_PDF',
-                    data: pdfData
-                }, 'https://cormort.github.io'); // **非常重要**：指定目標來源，確保安全
-            };
-            reader.readAsArrayBuffer(file);
-        });
-
-        // 監聽來自 iframe 的回傳訊息
-        const notesTextarea = document.getElementById('pdf-notes-textarea');
-
-        window.addEventListener('message', (event) => {
-            // 安全性檢查：確認訊息是否來自預期的 iframe 來源
-            if (event.origin !== 'https://cormort.github.io') {
-                return;
-            }
-
-            const message = event.data;
-            if (message.type === 'TEXT_SELECTED' && message.data) {
-                // 將從 iframe 收到的文字放入筆記區
-                const currentNotes = notesTextarea.value;
-                const timestamp = new Date().toLocaleString('zh-TW', { hour12: false });
-                notesTextarea.value = `${currentNotes}\n--- [${timestamp}] ---\n${message.data.trim()}\n`;
-                // 自動捲動到最下方
-                notesTextarea.scrollTop = notesTextarea.scrollHeight;
-            }
-        });
-    }
-});
-// ===================================================================
-// ========== END: PDF 閱讀器整合功能 ==========
-// ===================================================================
