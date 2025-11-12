@@ -93,7 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const pdfUploadInput = document.getElementById('pdf-upload-input');
     const notesTextarea = document.getElementById('pdf-notes-textarea');
     let pdfViewerIframe = null; 
-
+    // ========== START: 選取新按鈕 ==========
+    const copyPdfNoteBtn = document.getElementById('copy-pdf-note-btn');
+    const sendToNotesBtn = document.getElementById('send-to-notes-btn');
+    const clearPdfNoteBtn = document.getElementById('clear-pdf-note-btn');
+    // ========== END: 選取新按鈕 ==========
     if (pdfUploadInput && notesTextarea) {
         pdfUploadInput.addEventListener('change', (event) => {
             const file = event.target.files[0];
@@ -130,6 +134,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 notesTextarea.scrollTop = notesTextarea.scrollHeight;
             }
         });
+            // ========== START: 為新按鈕綁定事件 ==========
+            if (copyPdfNoteBtn) {
+                copyPdfNoteBtn.addEventListener('click', () => {
+                    const content = notesTextarea.value;
+                    if (content.trim()) {
+                        navigator.clipboard.writeText(content).then(() => {
+                            alert('📋 筆記內容已複製到剪貼簿！');
+                        }).catch(err => {
+                            console.error('複製失敗:', err);
+                            alert('複製失敗，請重試。');
+                        });
+                    } else {
+                        alert('筆記區沒有內容可以複製。');
+                    }
+                });
+            }
+    
+            if (sendToNotesBtn) {
+                sendToNotesBtn.addEventListener('click', () => {
+                    const content = notesTextarea.value.trim();
+                    if (content) {
+                        // 使用您現有的筆記儲存邏輯
+                        const title = `PDF 筆記 - ${new Date().toLocaleString('zh-TW')}`;
+                        const meta = {
+                            id: getTimestampID(),
+                            title: title,
+                            tags: ['pdf', '摘錄'],
+                            template: 'default',
+                            date: new Date().toISOString()
+                        };
+                        addNoteToStorage(meta, content);
+                        alert('✅ 筆記已成功儲存到「資料管理」！');
+                        
+                        // 提示使用者可以清空
+                        if(confirm("筆記已儲存，要清空目前的筆記區嗎？")) {
+                            notesTextarea.value = '';
+                        }
+                    } else {
+                        alert('筆記區沒有內容可以儲存。');
+                    }
+                });
+            }
+    
+            if (clearPdfNoteBtn) {
+                clearPdfNoteBtn.addEventListener('click', () => {
+                    const content = notesTextarea.value;
+                    if (content.trim()) {
+                        if (confirm('確定要清除筆記區的所有內容嗎？')) {
+                            notesTextarea.value = '';
+                        }
+                    } else {
+                        alert('筆記區已經是空的了。');
+                    }
+                });
+            }
+            // ========== END: 為新按鈕綁定事件 ==========
     }
 
     // --- 預設顯示第一個分頁 ---
