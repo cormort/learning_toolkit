@@ -529,3 +529,69 @@ function getTodayDate() { const d = new Date(); return `${d.getFullYear()}-${Str
 function downloadFile(filename, content) { const blob = new Blob([content], { type: 'text/plain;charset=utf-8' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url); }
 function createModal() { const overlay = document.createElement('div'); overlay.className = 'modal-overlay'; overlay.onclick = (e) => { if (e.target === overlay) closeModal(); }; const modal = document.createElement('div'); modal.className = 'modal'; overlay.appendChild(modal); document.body.appendChild(overlay); window.currentModal = overlay; return modal; }
 function closeModal() { if (window.currentModal) { document.body.removeChild(window.currentModal); window.currentModal = null; } }
+// ===================================================================
+// ========== START: PDF 閱讀器整合功能 (新增於檔案底部) ==========
+// ===================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // 延遲獲取元素，確保在 tab 切換後元素可見
+    // 因為您的 tab-content 預設是 display: none，直接獲取 contentWindow 可能為 null
+    const pdfTabButton = document.getElementById('tab-btn-pdf');
+    let pdfViewerIframe = null; // 先宣告變數
+
+    if (pdfTabButton) {
+        // 監聽 PDF 上傳事件
+        const pdfUploadInput = document.getElementById('pdf-upload-input');
+        
+        pdfUploadInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file || file.type !== 'application/pdf') {
+                alert('請選擇一個有效的 PDF 檔案！');
+                return;
+            }
+
+            // 在這裡才獲取 iframe，確保它已經被渲染
+            pdfViewerIframe = document.getElementById('pdf-viewer-iframe');
+            
+            if (!pdfViewerIframe || !pdfViewerIframe.contentWindow) {
+                alert('PDF 閱讀器元件尚未準備好，請稍後再試。');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const pdfData = e.target.result; // 檔案的 ArrayBuffer
+                
+                console.log('正在傳送 PDF 資料到 iframe...');
+                // 發送訊息到 iframe
+                pdfViewerIframe.contentWindow.postMessage({
+                    type: 'LOAD_PDF',
+                    data: pdfData
+                }, 'https://cormort.github.io'); // **非常重要**：指定目標來源，確保安全
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        // 監聽來自 iframe 的回傳訊息
+        const notesTextarea = document.getElementById('pdf-notes-textarea');
+
+        window.addEventListener('message', (event) => {
+            // 安全性檢查：確認訊息是否來自預期的 iframe 來源
+            if (event.origin !== 'https://cormort.github.io') {
+                return;
+            }
+
+            const message = event.data;
+            if (message.type === 'TEXT_SELECTED' && message.data) {
+                // 將從 iframe 收到的文字放入筆記區
+                const currentNotes = notesTextarea.value;
+                const timestamp = new Date().toLocaleString('zh-TW', { hour12: false });
+                notesTextarea.value = `${currentNotes}\n--- [${timestamp}] ---\n${message.data.trim()}\n`;
+                // 自動捲動到最下方
+                notesTextarea.scrollTop = notesTextarea.scrollHeight;
+            }
+        });
+    }
+});
+// ===================================================================
+// ========== END: PDF 閱讀器整合功能 ==========
+// ===================================================================
