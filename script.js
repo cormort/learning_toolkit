@@ -571,7 +571,27 @@ function renderNotesManager(filter = '') {
         container.appendChild(div);
     });
 }
-function showNoteDetail(note) { const modal = createModal(); modal.innerHTML = `<h2 class="text-2xl font-bold mb-4">${note.title}</h2><div class="text-sm text-slate-600 mb-4">建立：${new Date(note.created).toLocaleString()} | 更新：${new Date(note.lastModified).toLocaleString()}</div><pre class="whitespace-pre-wrap bg-slate-50 p-4 rounded-lg border text-sm">${note.content}</pre><button class="btn btn-danger mt-4" onclick="closeModal()">關閉</button>`; }
+function showNoteDetail(note) {
+    const modal = createModal();
+    // 我們在按鈕區新增一個 div 來更好地佈局
+    modal.innerHTML = `
+        <h2 class="text-2xl font-bold mb-4">${note.title}</h2>
+        <div class="text-sm text-slate-600 mb-4">建立：${new Date(note.created).toLocaleString()} | 更新：${new Date(note.lastModified).toLocaleString()}</div>
+        <pre id="modal-note-content" class="whitespace-pre-wrap bg-slate-50 p-4 rounded-lg border text-sm">${note.content}</pre>
+        
+        <!-- ========== START: 修改後的按鈕區 ========== -->
+        <div class="flex gap-3 mt-4">
+            <button id="generate-slides-btn" class="btn btn-info flex-1">🚀 生成簡報</button>
+            <button class="btn btn-danger flex-1" onclick="closeModal()">關閉</button>
+        </div>
+        <!-- ========== END: 修改後的按鈕區 ========== -->
+    `;
+
+    // 為新按鈕綁定事件
+    document.getElementById('generate-slides-btn').addEventListener('click', () => {
+        generateSlidesFromNote();
+    });
+}
 function deleteNoteById(id, event) { event.stopPropagation(); if (confirm('確定要刪除這筆筆記嗎？')) { notesStorage = notesStorage.filter(note => note.id !== id); ls.setItem('notesStorage', JSON.stringify(notesStorage)); renderNotesManager(document.getElementById('searchNotesInput').value); } }
 document.getElementById('searchNotesInput')?.addEventListener('input', (e) => { renderNotesManager(e.target.value); });
 function filterNotes(type) {
