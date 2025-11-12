@@ -592,6 +592,87 @@ function showNoteDetail(note) {
         generateSlidesFromNote();
     });
 }
+// ===== 簡報生成功能 =====
+
+/**
+ * 解析筆記內容，將其轉換為幻燈片物件陣列。
+ * 規則：以 '##' 開頭的行作為新幻燈片的標題。
+ * @param {string} noteContent - 筆記的完整內容。
+ * @returns {Array<{title: string, content: string}>}
+ */
+function parseNoteToSlides(noteContent) {
+    const slides = [];
+    const lines = noteContent.split('\n');
+    let currentSlide = null;
+
+    lines.forEach(line => {
+        if (line.trim().startsWith('## ')) {
+            // 如果是新標題，儲存上一張幻燈片，並開始新的
+            if (currentSlide) {
+                currentSlide.content = currentSlide.content.trim();
+                slides.push(currentSlide);
+            }
+            currentSlide = {
+                title: line.trim().substring(3), // 移除 '## '
+                content: ''
+            };
+        } else {
+            // 如果還沒開始第一張幻燈片，就把內容加到預設的第一張
+            if (!currentSlide) {
+                currentSlide = { title: '開頭', content: '' };
+            }
+            currentSlide.content += line + '\n';
+        }
+    });
+
+    // 加入最後一張幻燈片
+    if (currentSlide) {
+        currentSlide.content = currentSlide.content.trim();
+        slides.push(currentSlide);
+    }
+
+    return slides;
+}
+
+/**
+ * 從當前彈出視窗的筆記內容生成簡報。
+ */
+function generateSlidesFromNote() {
+    const noteContentElement = document.getElementById('modal-note-content');
+    if (!noteContentElement) {
+        alert('錯誤：找不到筆記內容。');
+        return;
+    }
+    const noteContent = noteContentElement.innerText;
+    const slidesData = parseNoteToSlides(noteContent);
+
+    if (slidesData.length === 0) {
+        alert('筆記內容無法解析成幻燈片。請使用 "## 標題" 來分隔您的幻燈片。');
+        return;
+    }
+
+    alert(`準備生成 ${slidesData.length} 頁簡報，請稍候...`);
+
+    // 創建一個隱藏的 iframe
+    let iframe = document.getElementById('slide-gen-iframe');
+    if (iframe) {
+        iframe.remove();
+    }
+    iframe = document.createElement('iframe');
+    iframe.id = 'slide-gen-iframe';
+    iframe.src = 'https://cormort.github.io/slide_html_gen/'; // **您的 slide_html_gen 網址**
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    // 等待 iframe 載入完成後發送訊息
+    iframe.onload = () => {
+        console.log('Slide Generator Iframe 已載入，正在傳送資料...');
+        iframe.contentWindow.postMessage({
+            type: 'GENERATE_SLIDES',
+            data: slidesData
+        }, 'https://cormort.github.io');
+    };
+}
 function deleteNoteById(id, event) { event.stopPropagation(); if (confirm('確定要刪除這筆筆記嗎？')) { notesStorage = notesStorage.filter(note => note.id !== id); ls.setItem('notesStorage', JSON.stringify(notesStorage)); renderNotesManager(document.getElementById('searchNotesInput').value); } }
 document.getElementById('searchNotesInput')?.addEventListener('input', (e) => { renderNotesManager(e.target.value); });
 function filterNotes(type) {
