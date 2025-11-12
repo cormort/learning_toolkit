@@ -34,6 +34,11 @@
                 <button id="tab-btn-notes" class="tab-btn" data-tooltip="筆記工具">
                     <span class="sidebar-icon">📝</span><span class="sidebar-text">筆記工具</span>
                 </button>
+            <!-- ========== START: 新增的 PDF 閱讀器按鈕 ========== -->
+                <button id="tab-btn-pdf" class="tab-btn" data-tooltip="PDF 閱讀筆記">
+                    <span class="sidebar-icon">📄</span><span class="sidebar-text">PDF 閱讀筆記</span>
+                </button>
+            <!-- ========== END: 新增的 PDF 閱讀器按鈕 ========== -->
                 <button id="tab-btn-voice" class="tab-btn" data-tooltip="語音筆記">
                     <span class="sidebar-icon">🎙️</span><span class="sidebar-text">語音筆記</span>
                 </button>
@@ -487,6 +492,35 @@
                     </div>
                     <div id="notesManager"></div>
                 </section>
+                <!-- ========== START: 新增的 PDF 閱讀器內容區塊 ========== -->
+                <section id="tab-content-pdf" class="tab-content">
+                    <h2 class="section-title">📄 PDF 閱讀筆記</h2>
+                    <p class="text-slate-700 mb-6 text-lg leading-relaxed">上傳您的 PDF 檔案，直接在線上閱讀、劃記重點並製作筆記。</p>
+
+                    <div class="content-box mb-6">
+                        <label for="pdf-upload-input" class="block text-sm font-semibold text-slate-700 mb-2">1. 選擇要閱讀的 PDF 檔案</label>
+                        <input type="file" id="pdf-upload-input" class="w-full border-2 border-slate-300 rounded-lg p-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept=".pdf">
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <!-- PDF Viewer Area (佔 2/3 寬度) -->
+                        <div class="md:col-span-2">
+                            <h3 class="font-bold text-lg mb-3 text-blue-800">閱讀器</h3>
+                            <div class="bg-slate-200 rounded-lg shadow-inner w-full" style="height: 80vh;">
+                                 <iframe id="pdf-viewer-iframe" src="https://cormort.github.io/pdfviewer_v2/" class="w-full h-full border-0 rounded-lg" title="PDF Viewer"></iframe>
+                            </div>
+                        </div>
+
+                        <!-- Notes Area (佔 1/3 寬度) -->
+                        <div class="md:col-span-1">
+                            <h3 class="font-bold text-lg mb-3 text-blue-800">筆記區</h3>
+                            <div class="content-box h-full flex flex-col p-0">
+                                <textarea id="pdf-notes-textarea" class="note-input flex-grow h-full" placeholder="從 PDF 中選取的文字將會自動添加到這裡..." style="height: 80vh;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- ========== END: 新增的 PDF 閱讀器內容區塊 ========== -->
             </div>
         </main>
     </div>
