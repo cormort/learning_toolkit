@@ -106,8 +106,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (btn) btn.classList.toggle('active', isActive);
                 if (content) {
                     content.classList.toggle('active', isActive);
-                    // Force display style to override any potential CSS conflicts
-                    content.style.display = isActive ? 'flex' : 'none';
+                    // Force display style to block to ensure vertical stacking
+                    content.style.display = isActive ? 'block' : 'none';
                 }
             });
             

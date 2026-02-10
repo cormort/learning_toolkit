@@ -300,8 +300,7 @@ body.sidebar-collapsed .main-content {
 }
 
 .tab-content.active {
-    display: flex;
-    flex-direction: column;
+    display: block;
     flex-grow: 1;
     width: 100%;
     animation: fadeIn 0.5s ease-out;
