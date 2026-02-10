@@ -104,7 +104,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isActive = key === activeName;
                 
                 if (btn) btn.classList.toggle('active', isActive);
-                if (content) content.classList.toggle('active', isActive);
+                if (content) {
+                    content.classList.toggle('active', isActive);
+                    // Force display style to override any potential CSS conflicts
+                    content.style.display = isActive ? 'flex' : 'none';
+                }
             });
             
             if (activeName === 'stats') updateStats();
