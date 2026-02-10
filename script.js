@@ -17,7 +17,7 @@ function showToast(message, type = 'info') {
     if (!container) {
         container = document.createElement('div');
         container.id = 'toast-container';
-        document.body.appendChild(container);
+        document.body.appendChild(container);setActiveTab
     }
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
@@ -106,10 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (btn) btn.classList.toggle('active', isActive);
                 if (content) {
                     content.classList.toggle('active', isActive);
-                    // Force display style to flex-column to ensure vertical stacking and height filling
+                    
                     if (isActive) {
-                        content.style.display = 'flex';
-                        content.style.flexDirection = 'column';
+                        content.style.display = 'block';          // 修改這裡：改為 block
+                        content.style.removeProperty('flex-direction'); // 移除多餘的屬性
                     } else {
                         content.style.display = 'none';
                     }
