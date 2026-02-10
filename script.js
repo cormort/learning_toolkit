@@ -1,5 +1,48 @@
 // 全域變數
 const ls = window.localStorage;
+
+// ===== 工具函數：安全與 UI =====
+function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function showToast(message, type = 'info') {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-content">
+            <span class="toast-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+            <span>${escapeHtml(message)}</span>
+        </div>
+    `;
+    container.appendChild(toast);
+    
+    // Trigger animation
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// 覆寫預設 alert 為 Toast (非同步，不阻塞)
+window.alert = (msg) => showToast(msg, 'info');
+
 let knowledgeList = JSON.parse(ls.getItem('knowledgeList') || '[]');
 let planner = JSON.parse(ls.getItem('studyPlanner') || '{"mon":[], "tue":[], "wed":[], "thu":[], "fri":[], "sat":[], "sun":[]}');
 let notesStorage = JSON.parse(ls.getItem('notesStorage') || '[]');
@@ -102,12 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
         pdfUploadInput.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (!file || file.type !== 'application/pdf') {
-                alert('請選擇一個有效的 PDF 檔案！');
+                showToast('請選擇一個有效的 PDF 檔案！', 'error');
                 return;
             }
             pdfViewerIframe = document.getElementById('pdf-viewer-iframe');
             if (!pdfViewerIframe || !pdfViewerIframe.contentWindow) {
-                alert('PDF 閱讀器元件尚未準備好，請稍後再試。');
+                showToast('PDF 閱讀器元件尚未準備好，請稍後再試。', 'error');
                 return;
             }
             const reader = new FileReader();
@@ -140,13 +183,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     const content = notesTextarea.value;
                     if (content.trim()) {
                         navigator.clipboard.writeText(content).then(() => {
-                            alert('📋 筆記內容已複製到剪貼簿！');
+                            showToast('📋 筆記內容已複製到剪貼簿！', 'success');
                         }).catch(err => {
                             console.error('複製失敗:', err);
-                            alert('複製失敗，請重試。');
+                            showToast('複製失敗，請重試。', 'error');
                         });
                     } else {
-                        alert('筆記區沒有內容可以複製。');
+                        showToast('筆記區沒有內容可以複製。', 'warning');
                     }
                 });
             }
@@ -165,14 +208,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             date: new Date().toISOString()
                         };
                         addNoteToStorage(meta, content);
-                        alert('✅ 筆記已成功儲存到「資料管理」！');
+                        showToast('✅ 筆記已成功儲存到「資料管理」！', 'success');
                         
                         // 提示使用者可以清空
                         if(confirm("筆記已儲存，要清空目前的筆記區嗎？")) {
                             notesTextarea.value = '';
                         }
                     } else {
-                        alert('筆記區沒有內容可以儲存。');
+                        showToast('筆記區沒有內容可以儲存。', 'warning');
                     }
                 });
             }
@@ -185,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             notesTextarea.value = '';
                         }
                     } else {
-                        alert('筆記區已經是空的了。');
+                        showToast('筆記區已經是空的了。', 'info');
                     }
                 });
             }
@@ -207,7 +250,7 @@ function renderKnowledgeList() {
     filtered.forEach(item => {
         const div = document.createElement('div');
         div.className = `knowledge-item status-${item.status}`;
-        div.innerHTML = `<span class="font-semibold text-lg">${item.topic}</span><div class="flex items-center gap-3 flex-wrap"><button class="status-btn" onclick="changeStatus(${item.id}, 'green')" title="我會的">✅</button><button class="status-btn" onclick="changeStatus(${item.id}, 'yellow')" title="半懂的">⚠️</button><button class="status-btn" onclick="changeStatus(${item.id}, 'red')" title="不會的">❌</button><button class="btn-delete" onclick="deleteTopic(${item.id})">刪除</button></div>`;
+        div.innerHTML = `<span class="font-semibold text-lg">${escapeHtml(item.topic)}</span><div class="flex items-center gap-3 flex-wrap"><button class="status-btn" onclick="changeStatus(${item.id}, 'green')" title="我會的">✅</button><button class="status-btn" onclick="changeStatus(${item.id}, 'yellow')" title="半懂的">⚠️</button><button class="status-btn" onclick="changeStatus(${item.id}, 'red')" title="不會的">❌</button><button class="btn-delete" onclick="deleteTopic(${item.id})">刪除</button></div>`;
         const activeBtn = div.querySelector(`.status-btn[onclick*="${item.status}"]`);
         if (activeBtn) { activeBtn.style.opacity = 1; activeBtn.style.transform = 'scale(1.2)'; }
         container.appendChild(div);
@@ -247,7 +290,7 @@ function renderPlanner() {
             li.className = 'task-item';
             if (task.isBuffer) li.classList.add('is-buffer');
             if (task.completed) li.classList.add('completed');
-            li.innerHTML = `<input type="checkbox" class="h-5 w-5 rounded" ${task.completed ? 'checked' : ''} onchange="toggleTask('${day}', ${idx})"><span>${task.isBuffer ? '🔑' : '⭐'} ${task.text}</span>`;
+            li.innerHTML = `<input type="checkbox" class="h-5 w-5 rounded" ${task.completed ? 'checked' : ''} onchange="toggleTask('${day}', ${idx})"><span>${task.isBuffer ? '🔑' : '⭐'} ${escapeHtml(task.text)}</span>`;
             ul.appendChild(li);
         });
     });
@@ -310,20 +353,20 @@ window.voiceNoteModule = (function() {
     const state = { startTime: null, endTime: null, transcriptSegments: [], isRecognizing: false, interimTranscript: '', isManualStop: false, recognition: null, isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent), restartTimeout: null, recognitionActive: false, };
     function init() { loadPreferences(); setupEventListeners(); initSpeechRecognition(); updateButtonStates(); }
     function setupEventListeners() { UIElements.controlBtn.addEventListener('click', toggleRecognition); UIElements.exportBtn.addEventListener('click', exportTranscript); UIElements.copyBtn.addEventListener('click', copyTranscript); UIElements.sendToNoteBtn.addEventListener('click', sendToNoteTool); UIElements.languageSelector.addEventListener('change', () => { if (state.recognition) { state.recognition.lang = UIElements.languageSelector.value; } savePreferences(); }); }
-    function initSpeechRecognition() { if (!('webkitSpeechRecognition' in window)) { alert("您的瀏覽器不支援 Web Speech API，請使用最新版本的 Chrome 瀏覽器。"); UIElements.controlBtn.disabled = true; return; } state.recognition = new webkitSpeechRecognition(); state.recognition.continuous = !state.isMobile; state.recognition.interimResults = true; state.recognition.maxAlternatives = 1; state.recognition.onstart = handleRecognitionStart; state.recognition.onerror = handleRecognitionError; state.recognition.onend = handleRecognitionEnd; state.recognition.onresult = handleRecognitionResult; }
+    function initSpeechRecognition() { if (!('webkitSpeechRecognition' in window)) { showToast("您的瀏覽器不支援 Web Speech API，請使用最新版本的 Chrome 瀏覽器。", "error"); UIElements.controlBtn.disabled = true; return; } state.recognition = new webkitSpeechRecognition(); state.recognition.continuous = !state.isMobile; state.recognition.interimResults = true; state.recognition.maxAlternatives = 1; state.recognition.onstart = handleRecognitionStart; state.recognition.onerror = handleRecognitionError; state.recognition.onend = handleRecognitionEnd; state.recognition.onresult = handleRecognitionResult; }
     function updateButtonStates() { UIElements.controlBtn.textContent = state.isRecognizing ? '停止辨識' : '開始辨識'; UIElements.controlBtn.classList.toggle('listening', state.isRecognizing); const canExportOrCopy = !state.isRecognizing && state.transcriptSegments.length > 1; UIElements.exportBtn.disabled = !canExportOrCopy; UIElements.copyBtn.disabled = !canExportOrCopy; UIElements.sendToNoteBtn.disabled = !canExportOrCopy; }
     function toggleRecognition() { if (state.isRecognizing) { stopRecognition(); } else { startRecognition(); } }
-    function startRecognition() { state.isManualStop = false; state.recognition.lang = UIElements.languageSelector.value; state.startTime = new Date(); state.transcriptSegments = [{ timestamp: state.startTime, text: '--- 錄音開始 ---' }]; state.interimTranscript = ''; updateTranscriptDisplay(); try { if (!state.recognitionActive) state.recognition.start(); } catch (e) { console.error("啟動辨識失敗:", e); alert("無法啟動語音辨識，請重新整理頁面再試。"); } }
+    function startRecognition() { state.isManualStop = false; state.recognition.lang = UIElements.languageSelector.value; state.startTime = new Date(); state.transcriptSegments = [{ timestamp: state.startTime, text: '--- 錄音開始 ---' }]; state.interimTranscript = ''; updateTranscriptDisplay(); try { if (!state.recognitionActive) state.recognition.start(); } catch (e) { console.error("啟動辨識失敗:", e); showToast("無法啟動語音辨識，請重新整理頁面再試。", "error"); } }
     function stopRecognition() { if (!state.isRecognizing) return; state.isManualStop = true; if (state.recognitionActive) { state.recognition.stop(); } else { handleRecognitionEnd(); } }
     function handleRecognitionStart() { state.recognitionActive = true; state.isRecognizing = true; UIElements.languageSelector.disabled = true; updateButtonStates(); }
-    function handleRecognitionError(event) { console.error('語音辨識錯誤:', event.error, event); state.recognitionActive = false; if (event.error === 'not-allowed') { alert("您拒絕了麥克風權限。請允許麥克風存取以使用此功能。"); } else if (event.error === 'network') { alert('網路連線問題，請檢查網路設定。'); } }
+    function handleRecognitionError(event) { console.error('語音辨識錯誤:', event.error, event); state.recognitionActive = false; if (event.error === 'not-allowed') { showToast("您拒絕了麥克風權限。請允許麥克風存取以使用此功能。", "error"); } else if (event.error === 'network') { showToast('網路連線問題，請檢查網路設定。', 'error'); } }
     function handleRecognitionEnd() { state.recognitionActive = false; clearTimeout(state.restartTimeout); if (!state.isManualStop && state.isRecognizing) { const restartDelay = state.isMobile ? 200 : 500; state.restartTimeout = setTimeout(() => { if (state.isRecognizing && !state.recognitionActive) { try { state.recognition.start(); } catch (e) { console.error('自動重啟失敗:', e); } } }, restartDelay); } else { state.isRecognizing = false; UIElements.languageSelector.disabled = false; state.endTime = new Date(); updateButtonStates(); } }
     function handleRecognitionResult(event) { state.interimTranscript = ''; let final_transcript_this_turn = ''; for (let i = event.resultIndex; i < event.results.length; ++i) { const transcript = event.results[i][0].transcript; if (event.results[i].isFinal) { final_transcript_this_turn += transcript.trim() + ' '; } else { state.interimTranscript += transcript; } } if (final_transcript_this_turn) { state.transcriptSegments.push({ timestamp: new Date(), text: final_transcript_this_turn.trim() }); } updateTranscriptDisplay(); }
-    function updateTranscriptDisplay() { const finalContent = state.transcriptSegments.map(segment => `${formatTime(segment.timestamp)} ${segment.text}`).join('\n'); UIElements.transcript.innerHTML = `<span class="placeholder" style="display:none;"></span>${finalContent}\n<span class="interim">${state.interimTranscript}</span>`; UIElements.transcriptContainer.scrollTop = UIElements.transcriptContainer.scrollHeight; }
+    function updateTranscriptDisplay() { const finalContent = state.transcriptSegments.map(segment => `${formatTime(segment.timestamp)} ${escapeHtml(segment.text)}`).join('\n'); UIElements.transcript.innerHTML = `<span class="placeholder" style="display:none;"></span>${finalContent}\n<span class="interim">${escapeHtml(state.interimTranscript)}</span>`; UIElements.transcriptContainer.scrollTop = UIElements.transcriptContainer.scrollHeight; }
     function getFullTranscriptText(withTimestamp = true) { if (withTimestamp) { return state.transcriptSegments.map(segment => `${formatTime(segment.timestamp)} ${segment.text}`).join('\n'); } return state.transcriptSegments.map(segment => segment.text).slice(1).join('\n'); }
     function exportTranscript() { if (!state.startTime || !state.endTime) return; const textToSave = getFullTranscriptText().replace(/\n/g, '\r\n'); const fileName = createFileName(state.startTime, state.endTime); downloadFile(fileName, textToSave); }
-    function copyTranscript() { if (state.transcriptSegments.length <= 1) return; const textToCopy = getFullTranscriptText(); navigator.clipboard.writeText(textToCopy).then(() => { alert("已複製到剪貼簿！"); }, (err) => { console.error('複製失敗: ', err); alert("複製失敗，請重試。"); }); }
-    function sendToNoteTool() { if (state.transcriptSegments.length <= 1) { alert("沒有逐字稿內容可以傳送。"); return; } const transcriptText = getFullTranscriptText(false); window.setActiveTab('notes'); const noteTemplateSelect = document.getElementById('noteTemplateSelect'); noteTemplateSelect.value = 'default'; document.querySelectorAll('.template-fields').forEach(div => div.classList.add('hidden')); document.getElementById('template-default').classList.remove('hidden'); document.getElementById('noteTheme').value = `語音筆記 - ${new Date().toLocaleString()}`; document.getElementById('noteLearned').value = transcriptText; document.getElementById('notePoints').value = ''; document.getElementById('noteQuestion').value = ''; alert("逐字稿已成功傳送到筆記工具！"); }
+    function copyTranscript() { if (state.transcriptSegments.length <= 1) return; const textToCopy = getFullTranscriptText(); navigator.clipboard.writeText(textToCopy).then(() => { showToast("已複製到剪貼簿！", "success"); }, (err) => { console.error('複製失敗: ', err); showToast("複製失敗，請重試。", "error"); }); }
+    function sendToNoteTool() { if (state.transcriptSegments.length <= 1) { showToast("沒有逐字稿內容可以傳送。", "warning"); return; } const transcriptText = getFullTranscriptText(false); window.setActiveTab('notes'); const noteTemplateSelect = document.getElementById('noteTemplateSelect'); noteTemplateSelect.value = 'default'; document.querySelectorAll('.template-fields').forEach(div => div.classList.add('hidden')); document.getElementById('template-default').classList.remove('hidden'); document.getElementById('noteTheme').value = `語音筆記 - ${new Date().toLocaleString()}`; document.getElementById('noteLearned').value = transcriptText; document.getElementById('notePoints').value = ''; document.getElementById('noteQuestion').value = ''; showToast("逐字稿已成功傳送到筆記工具！", "success"); }
     function savePreferences() { ls.setItem('voice_note_rec_lang', UIElements.languageSelector.value); }
     function loadPreferences() { const savedRecLang = ls.getItem('voice_note_rec_lang'); if (savedRecLang) { UIElements.languageSelector.value = savedRecLang; } }
     function formatTime(date) { const h = String(date.getHours()).padStart(2, '0'); const m = String(date.getMinutes()).padStart(2, '0'); const s = String(date.getSeconds()).padStart(2, '0'); return `[${h}:${m}:${s}]`; }
@@ -337,39 +380,85 @@ function renderFlashcardList() {
     const count = document.getElementById('flashcardCount');
     const filter = document.getElementById('flashcardFilterCategory');
     if (!list) return;
+    
+    // 確保所有卡片都有 ID (兼容舊資料)
+    flashcards.forEach((card, i) => { if(!card.id) card.id = Date.now() + i; });
+    
     count.textContent = flashcards.length;
     const categories = [...new Set(flashcards.map(c => c.category))];
     filter.innerHTML = '<option value="all">全部分類</option>';
-    categories.forEach(cat => { const opt = document.createElement('option'); opt.value = cat; opt.textContent = cat; filter.appendChild(opt); });
+    categories.forEach(cat => { 
+        const opt = document.createElement('option'); 
+        opt.value = escapeHtml(cat); 
+        opt.textContent = escapeHtml(cat); 
+        filter.appendChild(opt); 
+    });
+    
     if (flashcards.length === 0) { list.innerHTML = '<p class="text-slate-500 text-center p-4">還沒有卡片。開始製作你的第一張吧！</p>'; return; }
+    
     const filtered = filter.value === 'all' ? flashcards : flashcards.filter(c => c.category === filter.value);
     list.innerHTML = '';
-    filtered.forEach((card, idx) => {
+    
+    filtered.forEach((card) => {
         const div = document.createElement('div');
         div.className = 'p-3 bg-white border-2 border-blue-200 rounded-lg hover:shadow-md transition';
-        div.innerHTML = `<div class="flex justify-between items-start"><div class="flex-1"><div class="font-bold text-blue-800">${card.question}</div><div class="text-sm text-slate-600 mt-1">${card.category}</div></div><button class="btn-delete text-xs" onclick="deleteFlashcard(${idx})">刪除</button></div>`;
+        div.innerHTML = `<div class="flex justify-between items-start"><div class="flex-1"><div class="font-bold text-blue-800">${escapeHtml(card.question)}</div><div class="text-sm text-slate-600 mt-1">${escapeHtml(card.category)}</div></div><button class="btn-delete text-xs" onclick="deleteFlashcard(${card.id})">刪除</button></div>`;
         list.appendChild(div);
     });
 }
+
 document.getElementById('addFlashcardBtn')?.addEventListener('click', () => {
     const question = document.getElementById('flashcardQuestion').value.trim();
     const answer = document.getElementById('flashcardAnswer').value.trim();
     const category = document.getElementById('flashcardCategory').value.trim() || '未分類';
-    if (question && answer) { flashcards.push({ question, answer, category, created: new Date().toISOString() }); ls.setItem('flashcards', JSON.stringify(flashcards)); document.getElementById('flashcardQuestion').value = ''; document.getElementById('flashcardAnswer').value = ''; document.getElementById('flashcardCategory').value = ''; renderFlashcardList(); updateFlashcardPreview(question, answer); alert('✅ 卡片已新增！'); } else { alert('請填寫問題和答案！'); }
+    if (question && answer) { 
+        flashcards.push({ id: Date.now(), question, answer, category, created: new Date().toISOString() }); 
+        ls.setItem('flashcards', JSON.stringify(flashcards)); 
+        document.getElementById('flashcardQuestion').value = ''; 
+        document.getElementById('flashcardAnswer').value = ''; 
+        document.getElementById('flashcardCategory').value = ''; 
+        renderFlashcardList(); 
+        updateFlashcardPreview(question, answer); 
+        showToast('✅ 卡片已新增！', 'success'); 
+    } else { 
+        showToast('請填寫問題和答案！', 'error'); 
+    }
 });
-function updateFlashcardPreview(question, answer) { document.getElementById('previewQuestion').textContent = question; document.getElementById('previewAnswer').textContent = answer; }
+
+function updateFlashcardPreview(question, answer) { 
+    document.getElementById('previewQuestion').textContent = question; 
+    document.getElementById('previewAnswer').textContent = answer; 
+}
+
 document.getElementById('flashcardPreview')?.addEventListener('click', function() { this.classList.toggle('flipped'); });
-function deleteFlashcard(idx) { if (confirm('確定要刪除這張卡片嗎？')) { flashcards.splice(idx, 1); ls.setItem('flashcards', JSON.stringify(flashcards)); renderFlashcardList(); } }
+
+function deleteFlashcard(id) { 
+    if (confirm('確定要刪除這張卡片嗎？')) { 
+        flashcards = flashcards.filter(c => c.id !== id); 
+        ls.setItem('flashcards', JSON.stringify(flashcards)); 
+        renderFlashcardList(); 
+    } 
+}
+
 function startFlashcardReview() {
-    if (flashcards.length === 0) { alert('還沒有卡片可以複習！'); return; }
+    if (flashcards.length === 0) { showToast('還沒有卡片可以複習！', 'error'); return; }
     let currentIdx = 0;
     const modal = createModal();
-    function showCard() { const card = flashcards[currentIdx]; modal.innerHTML = `<h3 class="text-2xl font-bold mb-4">複習模式 (${currentIdx + 1}/${flashcards.length})</h3><div class="flashcard" onclick="this.classList.toggle('flipped')"><div class="flashcard-inner"><div class="flashcard-front"><div class="text-center"><p class="text-sm mb-2 opacity-75">問題</p><p>${card.question}</p></div></div><div class="flashcard-back"><div class="text-center"><p class="text-sm mb-2 opacity-75">答案</p><p>${card.answer}</p></div></div></div></div><div class="flex gap-3 mt-6"><button class="btn btn-primary flex-1" onclick="nextCard()">下一張 →</button><button class="btn btn-danger" onclick="closeModal()">結束複習</button></div>`; }
+    function showCard() { 
+        const card = flashcards[currentIdx]; 
+        modal.innerHTML = `<h3 class="text-2xl font-bold mb-4">複習模式 (${currentIdx + 1}/${flashcards.length})</h3><div class="flashcard" onclick="this.classList.toggle('flipped')"><div class="flashcard-inner"><div class="flashcard-front"><div class="text-center"><p class="text-sm mb-2 opacity-75">問題</p><p>${escapeHtml(card.question)}</p></div></div><div class="flashcard-back"><div class="text-center"><p class="text-sm mb-2 opacity-75">答案</p><p>${escapeHtml(card.answer)}</p></div></div></div></div><div class="flex gap-3 mt-6"><button class="btn btn-primary flex-1" onclick="nextCard()">下一張 →</button><button class="btn btn-danger" onclick="closeModal()">結束複習</button></div>`; 
+    }
     window.nextCard = () => { currentIdx = (currentIdx + 1) % flashcards.length; showCard(); };
     showCard();
 }
-function clearAllFlashcards() { if (confirm('確定要清空所有卡片嗎？此動作無法復原！')) { flashcards = []; ls.setItem('flashcards', JSON.stringify(flashcards)); renderFlashcardList(); } }
-document.getElementById('flashcardFilterCategory')?.addEventListener('change', renderFlashcardList);
+
+function clearAllFlashcards() { 
+    if (confirm('確定要清空所有卡片嗎？此動作無法復原！')) { 
+        flashcards = []; 
+        ls.setItem('flashcards', JSON.stringify(flashcards)); 
+        renderFlashcardList(); 
+    } 
+}
 
 // ===== 番茄鐘 =====
 function updatePomodoroDisplay() {
@@ -408,7 +497,7 @@ function handleTimerComplete() {
         else { timerState.mode = 'shortBreak'; timerState.timeLeft = parseInt(document.getElementById('shortBreak').value) * 60; document.getElementById('timerStatus').textContent = '短休息時間 ☕'; }
         if (document.getElementById('soundEnabled').checked) playSound();
         if (document.getElementById('notificationEnabled')?.checked) sendNotification('🎉 番茄鐘完成！', '完成一個專注時段，該休息一下了！');
-        alert('🎉 完成一個番茄鐘！休息一下吧！');
+        showToast('🎉 完成一個番茄鐘！休息一下吧！', 'success');
     } else {
         const breakMin = timerState.mode === 'shortBreak' ? parseInt(document.getElementById('shortBreak').value) : parseInt(document.getElementById('longBreak').value);
         pomodoroStats.breakMinutes += breakMin;
@@ -417,7 +506,7 @@ function handleTimerComplete() {
         document.getElementById('timerStatus').textContent = '準備開始學習 🍅';
         if (document.getElementById('soundEnabled').checked) playSound();
         if (document.getElementById('notificationEnabled')?.checked) sendNotification('✅ 休息結束！', '準備開始下一個番茄鐘！');
-        alert('✅ 休息結束！準備開始下一個番茄鐘！');
+        showToast('✅ 休息結束！準備開始下一個番茄鐘！', 'success');
     }
     ls.setItem('pomodoroStats', JSON.stringify(pomodoroStats));
     document.getElementById('timerStart').classList.remove('hidden');
@@ -566,7 +655,7 @@ function renderNotesManager(filter = '') {
     filtered.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified)).forEach(note => {
         const div = document.createElement('div');
         div.className = 'note-item';
-        div.innerHTML = `<div><div class="note-title">${note.title}</div>${note.tags && note.tags.length ? `<span class="note-tags">${note.tags.map(t => '#'+t).join(' ')}</span>` : ''}</div><div class="flex items-center gap-2"><span class="note-date">${new Date(note.lastModified).toLocaleDateString()}</span><button class="btn-delete text-xs" onclick="deleteNoteById('${note.id}', event)">刪除</button></div>`;
+        div.innerHTML = `<div><div class="note-title">${escapeHtml(note.title)}</div>${note.tags && note.tags.length ? `<span class="note-tags">${note.tags.map(t => '#'+escapeHtml(t)).join(' ')}</span>` : ''}</div><div class="flex items-center gap-2"><span class="note-date">${new Date(note.lastModified).toLocaleDateString()}</span><button class="btn-delete text-xs" onclick="deleteNoteById('${note.id}', event)">刪除</button></div>`;
         div.onclick = (e) => { if (!e.target.classList.contains('btn-delete')) { showNoteDetail(note); } };
         container.appendChild(div);
     });
@@ -575,9 +664,9 @@ function showNoteDetail(note) {
     const modal = createModal();
     // 我們在按鈕區新增一個 div 來更好地佈局
     modal.innerHTML = `
-        <h2 class="text-2xl font-bold mb-4">${note.title}</h2>
+        <h2 class="text-2xl font-bold mb-4">${escapeHtml(note.title)}</h2>
         <div class="text-sm text-slate-600 mb-4">建立：${new Date(note.created).toLocaleString()} | 更新：${new Date(note.lastModified).toLocaleString()}</div>
-        <pre id="modal-note-content" class="whitespace-pre-wrap bg-slate-50 p-4 rounded-lg border text-sm">${note.content}</pre>
+        <pre id="modal-note-content" class="whitespace-pre-wrap bg-slate-50 p-4 rounded-lg border text-sm">${escapeHtml(note.content)}</pre>
         
         <!-- ========== START: 修改後的按鈕區 ========== -->
         <div class="flex gap-3 mt-4">
@@ -592,96 +681,6 @@ function showNoteDetail(note) {
         generateSlidesFromNote();
     });
 }
-// ===== 簡報生成功能 =====
-
-/**
- * 解析筆記內容，將其轉換為幻燈片物件陣列。
- * 規則：以 '##' 開頭的行作為新幻燈片的標題。
- * @param {string} noteContent - 筆記的完整內容。
- * @returns {Array<{title: string, content: string}>}
- */
-function parseNoteToSlides(noteContent) {
-    const slides = [];
-    const lines = noteContent.split('\n');
-    let currentSlide = null;
-
-    lines.forEach(line => {
-        if (line.trim().startsWith('## ')) {
-            // 如果是新標題，儲存上一張幻燈片，並開始新的
-            if (currentSlide) {
-                currentSlide.content = currentSlide.content.trim();
-                slides.push(currentSlide);
-            }
-            currentSlide = {
-                title: line.trim().substring(3), // 移除 '## '
-                content: ''
-            };
-        } else {
-            // 如果還沒開始第一張幻燈片，就把內容加到預設的第一張
-            if (!currentSlide) {
-                currentSlide = { title: '開頭', content: '' };
-            }
-            currentSlide.content += line + '\n';
-        }
-    });
-
-    // 加入最後一張幻燈片
-    if (currentSlide) {
-        currentSlide.content = currentSlide.content.trim();
-        slides.push(currentSlide);
-    }
-
-    return slides;
-}
-
-/**
- * 從當前彈出視窗的筆記內容生成簡報。
- */
-function generateSlidesFromNote() {
-    const noteContentElement = document.getElementById('modal-note-content');
-    if (!noteContentElement) {
-        alert('錯誤：找不到筆記內容。');
-        return;
-    }
-    const noteContent = noteContentElement.innerText;
-    const slidesData = parseNoteToSlides(noteContent);
-
-    if (slidesData.length === 0) {
-        alert('筆記內容無法解析成幻燈片。請使用 "## 標題" 來分隔您的幻燈片。');
-        return;
-    }
-
-    alert(`準備生成 ${slidesData.length} 頁簡報，請稍候...`);
-
-    // 創建一個隱藏的 iframe
-    let iframe = document.getElementById('slide-gen-iframe');
-    if (iframe) {
-        iframe.remove();
-    }
-    iframe = document.createElement('iframe');
-    iframe.id = 'slide-gen-iframe';
-    iframe.src = 'https://cormort.github.io/slide_html_gen/'; // **您的 slide_html_gen 網址**
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-
-    // 等待 iframe 載入完成後發送訊息
-    iframe.onload = () => {
-        console.log('Slide Generator Iframe 已載入，正在傳送資料...');
-        iframe.contentWindow.postMessage({
-            type: 'GENERATE_SLIDES',
-            data: slidesData
-        }, 'https://cormort.github.io');
-    };
-}
-function deleteNoteById(id, event) { event.stopPropagation(); if (confirm('確定要刪除這筆筆記嗎？')) { notesStorage = notesStorage.filter(note => note.id !== id); ls.setItem('notesStorage', JSON.stringify(notesStorage)); renderNotesManager(document.getElementById('searchNotesInput').value); } }
-document.getElementById('searchNotesInput')?.addEventListener('input', (e) => { renderNotesManager(e.target.value); });
-function filterNotes(type) {
-    let notesToShow = [];
-    if (type === 'all') { notesToShow = notesStorage; } 
-    else if (type === 'recent') { const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000; notesToShow = notesStorage.filter(n => new Date(n.lastModified).getTime() > weekAgo); } 
-    else if (type === 'important') { notesToShow = notesStorage.filter(n => n.important); }
-    renderFilteredNotes(notesToShow);
-}
 function renderFilteredNotes(notes) {
     const container = document.getElementById('notesManager');
     if (!container) return;
@@ -690,7 +689,7 @@ function renderFilteredNotes(notes) {
     notes.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified)).forEach(note => {
         const div = document.createElement('div');
         div.className = 'note-item';
-        div.innerHTML = `<div class="note-title">${note.title}</div><span class="note-date">${new Date(note.lastModified).toLocaleDateString()}</span>`;
+        div.innerHTML = `<div class="note-title">${escapeHtml(note.title)}</div><span class="note-date">${new Date(note.lastModified).toLocaleDateString()}</span>`;
         div.onclick = () => showNoteDetail(note);
         container.appendChild(div);
     });
@@ -714,16 +713,16 @@ function importData() {
                     if (data.notesStorage) ls.setItem('notesStorage', JSON.stringify(data.notesStorage));
                     if (data.flashcards) ls.setItem('flashcards', JSON.stringify(data.flashcards));
                     if (data.pomodoroStats) ls.setItem('pomodoroStats', JSON.stringify(data.pomodoroStats));
-                    alert('✅ 資料匯入成功！頁面將重新載入...');
-                    location.reload();
+                    showToast('✅ 資料匯入成功！頁面將重新載入...', 'success');
+                    setTimeout(() => location.reload(), 1500);
                 }
-            } catch (err) { alert('❌ 檔案格式錯誤！'); }
+            } catch (err) { showToast('❌ 檔案格式錯誤！', 'error'); }
         };
         reader.readAsText(file);
     };
     input.click();
 }
-function clearAllData() { if (confirm('⚠️ 確定要清空所有資料嗎？此動作無法復原！')) { if (confirm('⚠️ 真的確定嗎？所有筆記、卡片、計畫都會消失！')) { ls.clear(); alert('✅ 所有資料已清空！頁面即將重新載入...'); setTimeout(() => location.reload(), 1000); } } }
+function clearAllData() { if (confirm('⚠️ 確定要清空所有資料嗎？此動作無法復原！')) { if (confirm('⚠️ 真的確定嗎？所有筆記、卡片、計畫都會消失！')) { ls.clear(); showToast('✅ 所有資料已清空！頁面即將重新載入...', 'success'); setTimeout(() => location.reload(), 1500); } } }
 
 // ===== 工具函數 =====
 function getTimestampID() { const d = new Date(); return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}${String(d.getSeconds()).padStart(2,'0')}`; }
