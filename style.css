@@ -118,6 +118,8 @@ body.sidebar-collapsed .sidebar-text {
     cursor: pointer;
     position: relative;
     text-align: left;
+    z-index: 50; /* Ensure clickable */
+    pointer-events: auto !important; /* Force clickable */
 }
 
 /* Hover 效果 */

@@ -96,22 +96,28 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.setActiveTab = function(activeName) {
-        Object.keys(tabs).forEach(key => {
-            const btn = document.getElementById(`tab-btn-${key}`);
-            const content = document.getElementById(tabs[key]);
-            const isActive = key === activeName;
+        try {
+            console.log('Switching tab to:', activeName); // Debug log
+            Object.keys(tabs).forEach(key => {
+                const btn = document.getElementById(`tab-btn-${key}`);
+                const content = document.getElementById(tabs[key]);
+                const isActive = key === activeName;
+                
+                if (btn) btn.classList.toggle('active', isActive);
+                if (content) content.classList.toggle('active', isActive);
+            });
             
-            if (btn) btn.classList.toggle('active', isActive);
-            if (content) content.classList.toggle('active', isActive);
-        });
-        
-        if (activeName === 'stats') updateStats();
-        if (activeName === 'manager') renderNotesManager();
-        if (activeName !== 'voice' && window.voiceNoteModule && window.voiceNoteModule.isRecognizing()) {
-            window.voiceNoteModule.stopRecognition();
-        }
-        if (window.innerWidth < 768) {
-            closeMobileMenu();
+            if (activeName === 'stats') updateStats();
+            if (activeName === 'manager') renderNotesManager();
+            if (activeName !== 'voice' && window.voiceNoteModule && typeof window.voiceNoteModule.isRecognizing === 'function' && window.voiceNoteModule.isRecognizing()) {
+                window.voiceNoteModule.stopRecognition();
+            }
+            if (window.innerWidth < 768) {
+                closeMobileMenu();
+            }
+        } catch (err) {
+            console.error('Error switching tab:', err);
+            showToast('切換分頁時發生錯誤', 'error');
         }
     }
 
