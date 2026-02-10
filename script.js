@@ -106,8 +106,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (btn) btn.classList.toggle('active', isActive);
                 if (content) {
                     content.classList.toggle('active', isActive);
-                    // Force display style to block to ensure vertical stacking
-                    content.style.display = isActive ? 'block' : 'none';
+                    // Force display style to flex-column to ensure vertical stacking and height filling
+                    if (isActive) {
+                        content.style.display = 'flex';
+                        content.style.flexDirection = 'column';
+                    } else {
+                        content.style.display = 'none';
+                    }
                 }
             });
             
