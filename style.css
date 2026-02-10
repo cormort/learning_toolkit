@@ -300,8 +300,8 @@ body.sidebar-collapsed .main-content {
 }
 
 .tab-content.active {
-    display: flex;
-    flex-direction: column;
+    display: block;             /* 修改這裡：強制使用區塊排版，自然垂直堆疊 */
+    /* flex-direction: column;  <-- 這行可以刪除或註解掉 */
     flex-grow: 1;
     width: 100%;
     animation: fadeIn 0.5s ease-out;
