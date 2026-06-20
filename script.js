@@ -17,7 +17,7 @@ function showToast(message, type = 'info') {
     if (!container) {
         container = document.createElement('div');
         container.id = 'toast-container';
-        document.body.appendChild(container);setActiveTab
+        document.body.appendChild(container);
     }
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
@@ -39,9 +39,6 @@ function showToast(message, type = 'info') {
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
-
-// 覆寫預設 alert 為 Toast (非同步，不阻塞)
-window.alert = (msg) => showToast(msg, 'info');
 
 let knowledgeList = JSON.parse(ls.getItem('knowledgeList') || '[]');
 let planner = JSON.parse(ls.getItem('studyPlanner') || '{"mon":[], "tue":[], "wed":[], "thu":[], "fri":[], "sat":[], "sun":[]}');
@@ -252,6 +249,121 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 預設顯示第一個分頁 ---
     setActiveTab('guide');
+
+    // ===== 集中註冊所有 deferred 事件監聽器 =====
+    // 知識盤點
+    document.getElementById('addTopicBtn')?.addEventListener('click', () => {
+        const topicInput = document.getElementById('topicInput');
+        const statusSelect = document.getElementById('statusSelect');
+        if (!topicInput || !statusSelect) return;
+        const topic = topicInput.value.trim();
+        const status = statusSelect.value;
+        if (topic) { knowledgeList.push({ id: Date.now(), topic, status }); ls.setItem('knowledgeList', JSON.stringify(knowledgeList)); topicInput.value = ''; renderKnowledgeList(); }
+    });
+    document.getElementById('clearTriageBtn')?.addEventListener('click', () => {
+        if (confirm('您確定要清空所有知識盤點項目嗎？此動作無法復原。')) { knowledgeList = []; ls.setItem('knowledgeList', JSON.stringify(knowledgeList)); renderKnowledgeList(); }
+    });
+
+    // 讀書計畫
+    document.getElementById('addTaskBtn')?.addEventListener('click', () => {
+        const taskInput = document.getElementById('taskInput');
+        const daySelect = document.getElementById('daySelect');
+        const isBufferCheck = document.getElementById('isBufferCheck');
+        if (!taskInput || !daySelect || !isBufferCheck) return;
+        const text = taskInput.value.trim();
+        const day = daySelect.value;
+        const isBuffer = isBufferCheck.checked;
+        if (text) { planner[day].push({ text, isBuffer, completed: false }); ls.setItem('studyPlanner', JSON.stringify(planner)); taskInput.value = ''; isBufferCheck.checked = false; renderPlanner(); }
+    });
+    document.getElementById('clearPlannerBtn')?.addEventListener('click', () => {
+        if (confirm('您確定要清空本週所有計畫嗎？此動作無法復原。')) { planner = {"mon":[], "tue":[], "wed":[], "thu":[], "fri":[], "sat":[], "sun":[]}; ls.setItem('studyPlanner', JSON.stringify(planner)); renderPlanner(); }
+    });
+
+    // 筆記產生器
+    const noteTemplateSelect = document.getElementById('noteTemplateSelect');
+    const generatedNote = document.getElementById('generatedNote');
+    if (noteTemplateSelect) {
+        noteTemplateSelect.addEventListener('change', () => { getTemplateFields(noteTemplateSelect.value); });
+    }
+    document.getElementById('generateNoteBtn')?.addEventListener('click', generateNoteFromTemplate);
+    document.getElementById('copyNoteBtn')?.addEventListener('click', copyGeneratedNote);
+    document.getElementById('clearNoteBtn')?.addEventListener('click', clearGeneratedNote);
+
+    // 記憶卡片
+    document.getElementById('addFlashcardBtn')?.addEventListener('click', () => {
+        const question = document.getElementById('flashcardQuestion').value.trim();
+        const answer = document.getElementById('flashcardAnswer').value.trim();
+        const category = document.getElementById('flashcardCategory').value.trim() || '未分類';
+        if (question && answer) {
+            flashcards.push({ id: Date.now(), question, answer, category, created: new Date().toISOString() });
+            ls.setItem('flashcards', JSON.stringify(flashcards));
+            document.getElementById('flashcardQuestion').value = '';
+            document.getElementById('flashcardAnswer').value = '';
+            document.getElementById('flashcardCategory').value = '';
+            renderFlashcardList();
+            updateFlashcardPreview(question, answer);
+            showToast('✅ 卡片已新增！', 'success');
+        } else {
+            showToast('請填寫問題和答案！', 'error');
+        }
+    });
+    document.getElementById('flashcardPreview')?.addEventListener('click', function() { this.classList.toggle('flipped'); });
+
+    // 番茄鐘
+    document.getElementById('timerStart')?.addEventListener('click', () => {
+        if (!timerState.isRunning) {
+            timerState.isRunning = true;
+            document.getElementById('timerStart').classList.add('hidden');
+            document.getElementById('timerPause').classList.remove('hidden');
+            timerInterval = setInterval(() => {
+                if (timerState.timeLeft > 0) {
+                    timerState.timeLeft--;
+                    updatePomodoroDisplay();
+                    // 更新 document.title 顯示剩餘時間
+                    const mins = Math.floor(timerState.timeLeft / 60);
+                    const secs = timerState.timeLeft % 60;
+                    const modeLabel = timerState.mode === 'focus' ? '🍅' : '☕';
+                    document.title = `[${modeLabel} ${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}] 學習導航`;
+                } else {
+                    handleTimerComplete();
+                }
+            }, 1000);
+        }
+    });
+    document.getElementById('timerPause')?.addEventListener('click', () => {
+        timerState.isRunning = false;
+        clearInterval(timerInterval);
+        document.getElementById('timerStart').classList.remove('hidden');
+        document.getElementById('timerPause').classList.add('hidden');
+        document.title = '學習導航系統 - 進階版';
+    });
+    document.getElementById('timerReset')?.addEventListener('click', () => {
+        timerState.isRunning = false;
+        clearInterval(timerInterval);
+        timerState.timeLeft = parseInt(document.getElementById('focusTime').value) * 60;
+        timerState.mode = 'focus';
+        document.getElementById('timerStart').classList.remove('hidden');
+        document.getElementById('timerPause').classList.add('hidden');
+        document.getElementById('timerStatus').textContent = '準備開始學習 🍅';
+        document.title = '學習導航系統 - 進階版';
+        updatePomodoroDisplay();
+    });
+    document.getElementById('timerSkip')?.addEventListener('click', () => { handleTimerComplete(); });
+
+    // 通知權限
+    document.getElementById('notificationEnabled')?.addEventListener('change', function() {
+        if (this.checked && 'Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    });
+
+    // 搜尋欄即時過濾（資料管理）
+    const searchInput = document.getElementById('searchNotesInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            renderNotesManager(e.target.value);
+        });
+    }
 });
 
 // ===== 知識盤點 =====
@@ -271,14 +383,6 @@ function renderKnowledgeList() {
         container.appendChild(div);
     });
 }
-document.getElementById('addTopicBtn')?.addEventListener('click', () => {
-    const topicInput = document.getElementById('topicInput');
-    const statusSelect = document.getElementById('statusSelect');
-    if (!topicInput || !statusSelect) return;
-    const topic = topicInput.value.trim();
-    const status = statusSelect.value;
-    if (topic) { knowledgeList.push({ id: Date.now(), topic, status }); ls.setItem('knowledgeList', JSON.stringify(knowledgeList)); topicInput.value = ''; renderKnowledgeList(); }
-});
 function changeStatus(id, newStatus) {
     const item = knowledgeList.find(i => i.id === id);
     if (item) { item.status = newStatus; ls.setItem('knowledgeList', JSON.stringify(knowledgeList)); renderKnowledgeList(); }
@@ -287,9 +391,6 @@ function deleteTopic(id) {
     if (confirm('確定要刪除這個項目嗎？')) { knowledgeList = knowledgeList.filter(i => i.id !== id); ls.setItem('knowledgeList', JSON.stringify(knowledgeList)); renderKnowledgeList(); }
 }
 function filterKnowledge(status) { currentFilter = status; renderKnowledgeList(); }
-document.getElementById('clearTriageBtn')?.addEventListener('click', () => {
-    if (confirm('您確定要清空所有知識盤點項目嗎？此動作無法復原。')) { knowledgeList = []; ls.setItem('knowledgeList', JSON.stringify(knowledgeList)); renderKnowledgeList(); }
-});
 function exportKnowledge() { const text = knowledgeList.map(i => `${i.topic}\t${i.status}`).join('\n'); downloadFile('知識盤點.txt', text); }
 
 // ===== 讀書計畫 =====
@@ -310,56 +411,40 @@ function renderPlanner() {
         });
     });
 }
-document.getElementById('addTaskBtn')?.addEventListener('click', () => {
-    const taskInput = document.getElementById('taskInput');
-    const daySelect = document.getElementById('daySelect');
-    const isBufferCheck = document.getElementById('isBufferCheck');
-    if (!taskInput || !daySelect || !isBufferCheck) return;
-    const text = taskInput.value.trim();
-    const day = daySelect.value;
-    const isBuffer = isBufferCheck.checked;
-    if (text) { planner[day].push({ text, isBuffer, completed: false }); ls.setItem('studyPlanner', JSON.stringify(planner)); taskInput.value = ''; isBufferCheck.checked = false; renderPlanner(); }
-});
 function toggleTask(day, idx) { planner[day][idx].completed = !planner[day][idx].completed; ls.setItem('studyPlanner', JSON.stringify(planner)); renderPlanner(); }
-document.getElementById('clearPlannerBtn')?.addEventListener('click', () => {
-    if (confirm('您確定要清空本週所有計畫嗎？此動作無法復原。')) { planner = {"mon":[], "tue":[], "wed":[], "thu":[], "fri":[], "sat":[], "sun":[]}; ls.setItem('studyPlanner', JSON.stringify(planner)); renderPlanner(); }
-});
 function exportPlanner() { const days = {mon:'一', tue:'二', wed:'三', thu:'四', fri:'五', sat:'六', sun:'日'}; let text = '本週讀書計畫\n\n'; Object.keys(planner).forEach(day => { text += `星期${days[day]}:\n`; planner[day].forEach(task => { text += `  ${task.completed ? '☑' : '☐'} ${task.text}${task.isBuffer ? ' (抓漏時間)' : ''}\n`; }); text += '\n'; }); downloadFile('讀書計畫.txt', text); }
 
 // ===== 筆記產生器 =====
-const noteTemplateSelect = document.getElementById('noteTemplateSelect');
-const generateNoteBtn = document.getElementById('generateNoteBtn');
-const copyNoteBtn = document.getElementById('copyNoteBtn');
-const generatedNote = document.getElementById('generatedNote');
-
-if (noteTemplateSelect) {
-    noteTemplateSelect.addEventListener('change', () => {
-        const selected = noteTemplateSelect.value;
-        document.querySelectorAll('.template-fields').forEach(div => div.classList.add('hidden'));
-        document.getElementById(`template-${selected}`).classList.remove('hidden');
-        
-        if (selected === 'zettelkasten') { document.getElementById('noteZettelID').value = getTimestampID(); } 
-        else if (selected === 'bujo' || selected === 'diary') { const dateField = selected === 'bujo' ? 'noteBujoDate' : 'noteDiaryDate'; document.getElementById(dateField).value = getTodayDate(); }
-    });
+function getTemplateFields(tpl) {
+    document.querySelectorAll('.template-fields').forEach(div => div.classList.add('hidden'));
+    const fieldDiv = document.getElementById(`template-${tpl}`);
+    if (fieldDiv) fieldDiv.classList.remove('hidden');
+    if (tpl === 'zettelkasten') { document.getElementById('noteZettelID').value = getTimestampID(); }
+    else if (tpl === 'bujo' || tpl === 'diary') { const dateField = tpl === 'bujo' ? 'noteBujoDate' : 'noteDiaryDate'; const el = document.getElementById(dateField); if (el) el.value = getTodayDate(); }
 }
-if (generateNoteBtn) {
-    generateNoteBtn.addEventListener('click', () => {
-        const tpl = noteTemplateSelect.value;
-        let note = '';
-        let meta = {id: getTimestampID(), date: new Date().toISOString(), template: tpl};
-        if (tpl === 'default') { const theme = document.getElementById('noteTheme').value; const points = document.getElementById('notePoints').value; const learned = document.getElementById('noteLearned').value; const question = document.getElementById('noteQuestion').value; note = `## 🧠 主題：${theme || '（尚未填寫）'}\n--------------------\n### 🎯 重點3句\n${points || '（尚未填寫）'}\n\n### ✅ 我學到什麼\n${learned || '（尚未填寫）'}\n\n### ❓ 我還不懂什麼\n${question || '（尚未填寫）'}`; meta.title = theme || "學習反思"; }
-        else if (tpl === 'diary') { const date = document.getElementById('noteDiaryDate').value || getTodayDate(); const mood = document.getElementById('noteDiaryMood').value; const goodThings = document.getElementById('noteDiaryGoodThings').value; const improve = document.getElementById('noteDiaryImprove').value; const reflection = document.getElementById('noteDiaryReflection').value; note = `## ✍️ ${date} 日記 (${mood || '心情未記錄'})\n--------------------\n### 👍 今日三件好事\n${goodThings || '（尚未填寫）'}\n\n### 🌱 一件可以做得更好的事\n${improve || '（尚未填寫）'}\n\n### 💬 今日反思\n${reflection || '（尚未填寫）'}`; meta.title = `${date} 的日記`; }
-        else if (tpl === 'book-report') { const title = document.getElementById('noteBookTitle').value; const core = document.getElementById('noteBookCore').value; const takeaways = document.getElementById('noteBookTakeaways').value; const quote = document.getElementById('noteBookQuote').value; const apply = document.getElementById('noteBookApply').value; note = `## 📖 讀書心得：${title || '（書名未填）'}\n--------------------\n### 核心概念\n${core || '（尚未填寫）'}\n\n### 三個主要收穫\n${takeaways || '（尚未填寫）'}\n\n### 觸動我的話\n${quote || '（尚未填寫）'}\n\n### 我將如何應用\n${apply || '（尚未填寫）'}`; meta.title = `《${title || '未命名書籍'}》讀書心得`; }
-        else if (tpl === 'bujo') { const date = document.getElementById('noteBujoDate').value || getTodayDate(); const tasks = document.getElementById('noteBujoTasks').value.split('\n').filter(l => l.trim()).map(l => `⬜ ${l.trim()}`).join('\n'); const events = document.getElementById('noteBujoEvents').value.split('\n').filter(l => l.trim()).map(l => `○ ${l.trim()}`).join('\n'); const notes = document.getElementById('noteBujoNotes').value.split('\n').filter(l => l.trim()).map(l => `• ${l.trim()}`).join('\n'); note = `## 📅 ${date} - 每日紀錄\n--------------------\n### ⬜ 任務\n${tasks || '（沒有任務）'}\n\n### ○ 事件\n${events || '（沒有事件）'}\n\n### • 筆記\n${notes || '（沒有筆記）'}`; meta.title = `每日紀錄 ${date}`; }
-        else if (tpl === 'zettelkasten') { const id = document.getElementById('noteZettelID').value || meta.id; const title = document.getElementById('noteZettelTitle').value; const content = document.getElementById('noteZettelContent').value; const tags = document.getElementById('noteZettelTags').value; const links = document.getElementById('noteZettelLinks').value; note = `ID: ${id}\nTitle: ${title || '（請填寫標題）'}\n--------------------\n${content || '（請填寫內容）'}\n--------------------\nTags: ${tags || '（沒有標籤）'}\nLinks: ${links || '（沒有連結）'}`; meta.id = id; meta.title = title || '無標題'; meta.tags = tags.split(/\s*#\s*/).filter(t => t); }
-        else if (tpl === 'cornell') { const title = document.getElementById('noteCornellTitle').value; const cues = document.getElementById('noteCornellCues').value; const notes = document.getElementById('noteCornellNotes').value; const summary = document.getElementById('noteCornellSummary').value; note = `## 📖 康乃爾筆記：${title}\n--------------------\n### 關鍵字/問題\n${cues}\n\n### 課堂筆記\n${notes}\n\n### 總結\n${summary}`; meta.title = title || '康乃爾筆記'; }
-        else if (tpl === 'mindmap') { const central = document.getElementById('noteMindmapCentral').value; const branches = document.getElementById('noteMindmapBranches').value; const details = document.getElementById('noteMindmapDetails').value; note = `## 🌳 心智圖：${central}\n--------------------\n### 主要分支\n${branches}\n\n### 詳細內容\n${details}`; meta.title = central || '心智圖'; }
-        else if (tpl === 'feynman') { const concept = document.getElementById('noteFeynmanConcept').value; const simple = document.getElementById('noteFeynmanSimple').value; const analogy = document.getElementById('noteFeynmanAnalogy').value; const gaps = document.getElementById('noteFeynmanGaps').value; note = `## 👨‍🏫 費曼技巧：${concept}\n--------------------\n### 簡單解釋\n${simple}\n\n### 比喻/舉例\n${analogy}\n\n### 需要加強的部分\n${gaps}`; meta.title = concept || '費曼筆記'; }
-        generatedNote.value = note.trim(); addNoteToStorage(meta, note.trim()); alert('✅ 筆記已產生並儲存！');
-    });
+function generateNoteFromTemplate() {
+    const noteTemplateSelect = document.getElementById('noteTemplateSelect');
+    const generatedNote = document.getElementById('generatedNote');
+    if (!noteTemplateSelect || !generatedNote) return;
+    const tpl = noteTemplateSelect.value;
+    let note = '';
+    let meta = {id: getTimestampID(), date: new Date().toISOString(), template: tpl};
+    if (tpl === 'default') { const theme = document.getElementById('noteTheme').value; const points = document.getElementById('notePoints').value; const learned = document.getElementById('noteLearned').value; const question = document.getElementById('noteQuestion').value; note = `## 🧠 主題：${theme || '（尚未填寫）'}\n--------------------\n### 🎯 重點3句\n${points || '（尚未填寫）'}\n\n### ✅ 我學到什麼\n${learned || '（尚未填寫）'}\n\n### ❓ 我還不懂什麼\n${question || '（尚未填寫）'}`; meta.title = theme || "學習反思"; }
+    else if (tpl === 'diary') { const date = document.getElementById('noteDiaryDate').value || getTodayDate(); const mood = document.getElementById('noteDiaryMood').value; const goodThings = document.getElementById('noteDiaryGoodThings').value; const improve = document.getElementById('noteDiaryImprove').value; const reflection = document.getElementById('noteDiaryReflection').value; note = `## ✍️ ${date} 日記 (${mood || '心情未記錄'})\n--------------------\n### 👍 今日三件好事\n${goodThings || '（尚未填寫）'}\n\n### 🌱 一件可以做得更好的事\n${improve || '（尚未填寫）'}\n\n### 💬 今日反思\n${reflection || '（尚未填寫）'}`; meta.title = `${date} 的日記`; }
+    else if (tpl === 'book-report') { const title = document.getElementById('noteBookTitle').value; const core = document.getElementById('noteBookCore').value; const takeaways = document.getElementById('noteBookTakeaways').value; const quote = document.getElementById('noteBookQuote').value; const apply = document.getElementById('noteBookApply').value; note = `## 📖 讀書心得：${title || '（書名未填）'}\n--------------------\n### 核心概念\n${core || '（尚未填寫）'}\n\n### 三個主要收穫\n${takeaways || '（尚未填寫）'}\n\n### 觸動我的話\n${quote || '（尚未填寫）'}\n\n### 我將如何應用\n${apply || '（尚未填寫）'}`; meta.title = `《${title || '未命名書籍'}》讀書心得`; }
+    else if (tpl === 'bujo') { const date = document.getElementById('noteBujoDate').value || getTodayDate(); const tasks = document.getElementById('noteBujoTasks').value.split('\n').filter(l => l.trim()).map(l => `⬜ ${l.trim()}`).join('\n'); const events = document.getElementById('noteBujoEvents').value.split('\n').filter(l => l.trim()).map(l => `○ ${l.trim()}`).join('\n'); const notes = document.getElementById('noteBujoNotes').value.split('\n').filter(l => l.trim()).map(l => `• ${l.trim()}`).join('\n'); note = `## 📅 ${date} - 每日紀錄\n--------------------\n### ⬜ 任務\n${tasks || '（沒有任務）'}\n\n### ○ 事件\n${events || '（沒有事件）'}\n\n### • 筆記\n${notes || '（沒有筆記）'}`; meta.title = `每日紀錄 ${date}`; }
+    else if (tpl === 'zettelkasten') { const id = document.getElementById('noteZettelID').value || meta.id; const title = document.getElementById('noteZettelTitle').value; const content = document.getElementById('noteZettelContent').value; const tags = document.getElementById('noteZettelTags').value; const links = document.getElementById('noteZettelLinks').value; note = `ID: ${id}\nTitle: ${title || '（請填寫標題）'}\n--------------------\n${content || '（請填寫內容）'}\n--------------------\nTags: ${tags || '（沒有標籤）'}\nLinks: ${links || '（沒有連結）'}`; meta.id = id; meta.title = title || '無標題'; meta.tags = tags.split(/\s*#\s*/).filter(t => t); }
+    else if (tpl === 'cornell') { const title = document.getElementById('noteCornellTitle').value; const cues = document.getElementById('noteCornellCues').value; const notes = document.getElementById('noteCornellNotes').value; const summary = document.getElementById('noteCornellSummary').value; note = `## 📖 康乃爾筆記：${title}\n--------------------\n### 關鍵字/問題\n${cues}\n\n### 課堂筆記\n${notes}\n\n### 總結\n${summary}`; meta.title = title || '康乃爾筆記'; }
+    else if (tpl === 'mindmap') { const central = document.getElementById('noteMindmapCentral').value; const branches = document.getElementById('noteMindmapBranches').value; const details = document.getElementById('noteMindmapDetails').value; note = `## 🌳 心智圖：${central}\n--------------------\n### 主要分支\n${branches}\n\n### 詳細內容\n${details}`; meta.title = central || '心智圖'; }
+    else if (tpl === 'feynman') { const concept = document.getElementById('noteFeynmanConcept').value; const simple = document.getElementById('noteFeynmanSimple').value; const analogy = document.getElementById('noteFeynmanAnalogy').value; const gaps = document.getElementById('noteFeynmanGaps').value; note = `## 👨‍🏫 費曼技巧：${concept}\n--------------------\n### 簡單解釋\n${simple}\n\n### 比喻/舉例\n${analogy}\n\n### 需要加強的部分\n${gaps}`; meta.title = concept || '費曼筆記'; }
+    generatedNote.value = note.trim(); addNoteToStorage(meta, note.trim()); showToast('✅ 筆記已產生並儲存！', 'success');
 }
-copyNoteBtn?.addEventListener('click', () => { if (!generatedNote.value) { alert('請先產生筆記！'); return; } navigator.clipboard.writeText(generatedNote.value).then(() => { alert('📋 筆記已複製到剪貼簿！'); }); });
-document.getElementById('clearNoteBtn')?.addEventListener('click', () => { generatedNote.value = ''; });
+function copyGeneratedNote() {
+    const generatedNote = document.getElementById('generatedNote');
+    if (!generatedNote || !generatedNote.value) { showToast('請先產生筆記！', 'info'); return; }
+    navigator.clipboard.writeText(generatedNote.value).then(() => { showToast('📋 筆記已複製到剪貼簿！', 'success'); });
+}
+function clearGeneratedNote() { const el = document.getElementById('generatedNote'); if (el) el.value = ''; }
 function addNoteToStorage(meta, content) { notesStorage.push({ id: meta.id, title: meta.title || '無標題', tags: meta.tags || [], template: meta.template, content: content, created: meta.date || new Date().toISOString(), lastModified: new Date().toISOString(), important: false }); ls.setItem('notesStorage', JSON.stringify(notesStorage)); }
 
 // ===== 語音筆記模組 =====
@@ -421,32 +506,10 @@ function renderFlashcardList() {
         list.appendChild(div);
     });
 }
-
-document.getElementById('addFlashcardBtn')?.addEventListener('click', () => {
-    const question = document.getElementById('flashcardQuestion').value.trim();
-    const answer = document.getElementById('flashcardAnswer').value.trim();
-    const category = document.getElementById('flashcardCategory').value.trim() || '未分類';
-    if (question && answer) { 
-        flashcards.push({ id: Date.now(), question, answer, category, created: new Date().toISOString() }); 
-        ls.setItem('flashcards', JSON.stringify(flashcards)); 
-        document.getElementById('flashcardQuestion').value = ''; 
-        document.getElementById('flashcardAnswer').value = ''; 
-        document.getElementById('flashcardCategory').value = ''; 
-        renderFlashcardList(); 
-        updateFlashcardPreview(question, answer); 
-        showToast('✅ 卡片已新增！', 'success'); 
-    } else { 
-        showToast('請填寫問題和答案！', 'error'); 
-    }
-});
-
 function updateFlashcardPreview(question, answer) { 
     document.getElementById('previewQuestion').textContent = question; 
     document.getElementById('previewAnswer').textContent = answer; 
 }
-
-document.getElementById('flashcardPreview')?.addEventListener('click', function() { this.classList.toggle('flipped'); });
-
 function deleteFlashcard(id) { 
     if (confirm('確定要刪除這張卡片嗎？')) { 
         flashcards = flashcards.filter(c => c.id !== id); 
@@ -493,10 +556,6 @@ function updatePomodoroDisplay() {
     document.getElementById('todayPomodoros').textContent = pomodoroStats.today;
     document.getElementById('todayStudy').textContent = pomodoroStats.todayStudy + ' 分鐘';
 }
-document.getElementById('timerStart')?.addEventListener('click', () => { if (!timerState.isRunning) { timerState.isRunning = true; document.getElementById('timerStart').classList.add('hidden'); document.getElementById('timerPause').classList.remove('hidden'); timerInterval = setInterval(() => { if (timerState.timeLeft > 0) { timerState.timeLeft--; updatePomodoroDisplay(); } else { handleTimerComplete(); } }, 1000); } });
-document.getElementById('timerPause')?.addEventListener('click', () => { timerState.isRunning = false; clearInterval(timerInterval); document.getElementById('timerStart').classList.remove('hidden'); document.getElementById('timerPause').classList.add('hidden'); });
-document.getElementById('timerReset')?.addEventListener('click', () => { timerState.isRunning = false; clearInterval(timerInterval); timerState.timeLeft = parseInt(document.getElementById('focusTime').value) * 60; timerState.mode = 'focus'; document.getElementById('timerStart').classList.remove('hidden'); document.getElementById('timerPause').classList.add('hidden'); document.getElementById('timerStatus').textContent = '準備開始學習 🍅'; updatePomodoroDisplay(); });
-document.getElementById('timerSkip')?.addEventListener('click', () => { handleTimerComplete(); });
 function handleTimerComplete() {
     clearInterval(timerInterval);
     timerState.isRunning = false;
@@ -527,9 +586,12 @@ function handleTimerComplete() {
     document.getElementById('timerStart').classList.remove('hidden');
     document.getElementById('timerPause').classList.add('hidden');
     updatePomodoroDisplay();
+    // 完成番茄鐘後自動更新成就與統計（若已在 stats 分頁則 updateStats 已經處理）
+    if (document.getElementById('tab-content-stats')?.classList.contains('active')) {
+        updateAchievements();
+    }
 }
 function sendNotification(title, body) { if ('Notification' in window) { if (Notification.permission === 'granted') { new Notification(title, { body, icon: '🍅' }); } else if (Notification.permission !== 'denied') { Notification.requestPermission().then(permission => { if (permission === 'granted') new Notification(title, { body, icon: '🍅' }); }); } } }
-document.getElementById('notificationEnabled')?.addEventListener('change', function() { if (this.checked && 'Notification' in window && Notification.permission === 'default') { Notification.requestPermission(); } });
 function checkPomodoroDate() { const today = getTodayDate(); if (pomodoroStats.lastDate !== today) { pomodoroStats.today = 0; pomodoroStats.todayStudy = 0; pomodoroStats.lastDate = today; ls.setItem('pomodoroStats', JSON.stringify(pomodoroStats)); } }
 function playSound() { const audioContext = new (window.AudioContext || window.webkitAudioContext)(); const oscillator = audioContext.createOscillator(); oscillator.connect(audioContext.destination); oscillator.frequency.value = 800; oscillator.start(); oscillator.stop(audioContext.currentTime + 0.2); }
 
@@ -659,12 +721,31 @@ function recordDailyPomodoro() {
 }
 
 // ===== 資料管理 =====
-function renderNotesManager(filter = '') {
+function filterNotes(mode) {
+    // 支援 'all' / 'recent' / 'important' 三種過濾模式
+    const searchValue = document.getElementById('searchNotesInput')?.value || '';
+    let filtered = notesStorage;
+    // 先依關鍵字搜尋
+    if (searchValue) {
+        const lower = searchValue.toLowerCase();
+        filtered = filtered.filter(note =>
+            note.title.toLowerCase().includes(lower) ||
+            note.content.toLowerCase().includes(lower) ||
+            (note.tags && note.tags.some(t => t.toLowerCase().includes(lower)))
+        );
+    }
+    // 再依模式過濾
+    if (mode === 'recent') {
+        const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        filtered = filtered.filter(note => new Date(note.lastModified).getTime() > sevenDaysAgo);
+    } else if (mode === 'important') {
+        filtered = filtered.filter(note => note.important);
+    }
+    renderNotesManagerList(filtered);
+}
+function renderNotesManagerList(filtered) {
     const container = document.getElementById('notesManager');
     if (!container) return;
-    document.getElementById('allNotesCount').textContent = notesStorage.length;
-    let filtered = notesStorage;
-    if (filter) { const lowerFilter = filter.toLowerCase(); filtered = notesStorage.filter(note => note.title.toLowerCase().includes(lowerFilter) || note.content.toLowerCase().includes(lowerFilter) || (note.tags && note.tags.some(t => t.toLowerCase().includes(lowerFilter)))); }
     if (filtered.length === 0) { container.innerHTML = '<p class="text-slate-500 text-center p-6">找不到符合的筆記。</p>'; return; }
     container.innerHTML = '';
     filtered.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified)).forEach(note => {
@@ -674,6 +755,12 @@ function renderNotesManager(filter = '') {
         div.onclick = (e) => { if (!e.target.classList.contains('btn-delete')) { showNoteDetail(note); } };
         container.appendChild(div);
     });
+}
+function renderNotesManager(filter = '') {
+    document.getElementById('allNotesCount').textContent = notesStorage.length;
+    let filtered = notesStorage;
+    if (filter) { const lowerFilter = filter.toLowerCase(); filtered = notesStorage.filter(note => note.title.toLowerCase().includes(lowerFilter) || note.content.toLowerCase().includes(lowerFilter) || (note.tags && note.tags.some(t => t.toLowerCase().includes(lowerFilter)))); }
+    renderNotesManagerList(filtered);
 }
 function showNoteDetail(note) {
     const modal = createModal();
@@ -786,20 +873,6 @@ function deleteNoteById(id, event) {
         ls.setItem('notesStorage', JSON.stringify(notesStorage)); 
         renderNotesManager(document.getElementById('searchNotesInput').value); 
     } 
-}
-
-function renderFilteredNotes(notes) {
-    const container = document.getElementById('notesManager');
-    if (!container) return;
-    if (notes.length === 0) { container.innerHTML = '<p class="text-slate-500 text-center p-6">沒有符合的筆記。</p>'; return; }
-    container.innerHTML = '';
-    notes.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified)).forEach(note => {
-        const div = document.createElement('div');
-        div.className = 'note-item';
-        div.innerHTML = `<div class="note-title">${escapeHtml(note.title)}</div><span class="note-date">${new Date(note.lastModified).toLocaleDateString()}</span>`;
-        div.onclick = () => showNoteDetail(note);
-        container.appendChild(div);
-    });
 }
 
 // ===== 匯出/匯入功能 =====
