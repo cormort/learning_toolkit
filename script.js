@@ -308,6 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     document.getElementById('flashcardPreview')?.addEventListener('click', function() { this.classList.toggle('flipped'); });
+    document.getElementById('flashcardFilterCategory')?.addEventListener('change', renderFlashcardList);
 
     // 番茄鐘
     document.getElementById('timerStart')?.addEventListener('click', () => {
@@ -315,9 +316,11 @@ document.addEventListener('DOMContentLoaded', () => {
             timerState.isRunning = true;
             document.getElementById('timerStart').classList.add('hidden');
             document.getElementById('timerPause').classList.remove('hidden');
+            // ponytail: 以絕對時間計算剩餘秒數，分頁切到背景被節流也不會走慢
+            timerState.endAt = Date.now() + timerState.timeLeft * 1000;
             timerInterval = setInterval(() => {
+                timerState.timeLeft = Math.max(0, Math.round((timerState.endAt - Date.now()) / 1000));
                 if (timerState.timeLeft > 0) {
-                    timerState.timeLeft--;
                     updatePomodoroDisplay();
                     // 更新 document.title 顯示剩餘時間
                     const mins = Math.floor(timerState.timeLeft / 60);
@@ -485,14 +488,16 @@ function renderFlashcardList() {
     flashcards.forEach((card, i) => { if(!card.id) card.id = Date.now() + i; });
     
     count.textContent = flashcards.length;
+    const prevFilter = filter.value || 'all';
     const categories = [...new Set(flashcards.map(c => c.category))];
     filter.innerHTML = '<option value="all">全部分類</option>';
-    categories.forEach(cat => { 
-        const opt = document.createElement('option'); 
-        opt.value = escapeHtml(cat); 
-        opt.textContent = escapeHtml(cat); 
-        filter.appendChild(opt); 
+    categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;          // 原始值，才能與 card.category 正確比對
+        opt.textContent = cat;    // textContent 本身即安全
+        filter.appendChild(opt);
     });
+    filter.value = categories.includes(prevFilter) ? prevFilter : 'all';
     
     if (flashcards.length === 0) { list.innerHTML = '<p class="text-slate-500 text-center p-4">還沒有卡片。開始製作你的第一張吧！</p>'; return; }
     
@@ -637,7 +642,7 @@ function calculateStudyStreak() {
         let checkDate = new Date(today);
         checkDate.setDate(checkDate.getDate() - 1);
         for (let i = 0; i < 365; i++) {
-            const dateStr = checkDate.toISOString().split('T')[0];
+            const dateStr = toDateStr(checkDate);
             if (studyHistory.includes(dateStr)) { streak++; checkDate.setDate(checkDate.getDate() - 1); } 
             else { break; }
         }
@@ -702,7 +707,7 @@ function drawTrendChart() {
     for (let i = 6; i >= 0; i--) {
         const date = new Date(today);
         date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
+        const dateStr = toDateStr(date);
         days.push({ label: date.getDate() + '日', count: dailyStats[dateStr] || 0 });
     }
     const maxCount = Math.max(...days.map(d => d.count), 1);
@@ -748,11 +753,11 @@ function renderNotesManagerList(filtered) {
     if (!container) return;
     if (filtered.length === 0) { container.innerHTML = '<p class="text-slate-500 text-center p-6">找不到符合的筆記。</p>'; return; }
     container.innerHTML = '';
-    filtered.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified)).forEach(note => {
+    [...filtered].sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified)).forEach(note => {
         const div = document.createElement('div');
         div.className = 'note-item';
-        div.innerHTML = `<div><div class="note-title">${escapeHtml(note.title)}</div>${note.tags && note.tags.length ? `<span class="note-tags">${note.tags.map(t => '#'+escapeHtml(t)).join(' ')}</span>` : ''}</div><div class="flex items-center gap-2"><span class="note-date">${new Date(note.lastModified).toLocaleDateString()}</span><button class="btn-delete text-xs" onclick="deleteNoteById('${note.id}', event)">刪除</button></div>`;
-        div.onclick = (e) => { if (!e.target.classList.contains('btn-delete')) { showNoteDetail(note); } };
+        div.innerHTML = `<div><div class="note-title">${escapeHtml(note.title)}</div>${note.tags && note.tags.length ? `<span class="note-tags">${note.tags.map(t => '#'+escapeHtml(t)).join(' ')}</span>` : ''}</div><div class="flex items-center gap-2"><span class="note-date">${new Date(note.lastModified).toLocaleDateString()}</span><button class="star-btn text-lg" title="標記重要" onclick="toggleNoteImportant('${note.id}', event)">${note.important ? '⭐' : '☆'}</button><button class="btn-delete text-xs" onclick="deleteNoteById('${note.id}', event)">刪除</button></div>`;
+        div.onclick = (e) => { if (!e.target.closest('button')) { showNoteDetail(note); } };
         container.appendChild(div);
     });
 }
@@ -866,6 +871,14 @@ function generateSlidesFromNote() {
     };
 }
 
+function toggleNoteImportant(id, event) {
+    event.stopPropagation();
+    const note = notesStorage.find(n => n.id === id);
+    if (!note) return;
+    note.important = !note.important;
+    ls.setItem('notesStorage', JSON.stringify(notesStorage));
+    renderNotesManager(document.getElementById('searchNotesInput')?.value || '');
+}
 function deleteNoteById(id, event) { 
     event.stopPropagation(); 
     if (confirm('確定要刪除這筆筆記嗎？')) { 
@@ -876,7 +889,7 @@ function deleteNoteById(id, event) {
 }
 
 // ===== 匯出/匯入功能 =====
-function exportAllData() { const data = { knowledgeList, planner, notesStorage, flashcards, pomodoroStats, exportDate: new Date().toISOString() }; const json = JSON.stringify(data, null, 2); downloadFile(`學習系統備份_${getTodayDate()}.json`, json); }
+function exportAllData() { const data = { knowledgeList, planner, notesStorage, flashcards, pomodoroStats, studyHistory: JSON.parse(ls.getItem('studyHistory') || '[]'), dailyPomodoroStats: JSON.parse(ls.getItem('dailyPomodoroStats') || '{}'), exportDate: new Date().toISOString() }; const json = JSON.stringify(data, null, 2); downloadFile(`學習系統備份_${getTodayDate()}.json`, json); }
 function importData() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -893,6 +906,8 @@ function importData() {
                     if (data.notesStorage) ls.setItem('notesStorage', JSON.stringify(data.notesStorage));
                     if (data.flashcards) ls.setItem('flashcards', JSON.stringify(data.flashcards));
                     if (data.pomodoroStats) ls.setItem('pomodoroStats', JSON.stringify(data.pomodoroStats));
+                    if (data.studyHistory) ls.setItem('studyHistory', JSON.stringify(data.studyHistory));
+                    if (data.dailyPomodoroStats) ls.setItem('dailyPomodoroStats', JSON.stringify(data.dailyPomodoroStats));
                     showToast('✅ 資料匯入成功！頁面將重新載入...', 'success');
                     setTimeout(() => location.reload(), 1500);
                 }
@@ -906,7 +921,8 @@ function clearAllData() { if (confirm('⚠️ 確定要清空所有資料嗎？�
 
 // ===== 工具函數 =====
 function getTimestampID() { const d = new Date(); return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}${String(d.getSeconds()).padStart(2,'0')}`; }
-function getTodayDate() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function toDateStr(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function getTodayDate() { return toDateStr(new Date()); }
 function downloadFile(filename, content) { const blob = new Blob([content], { type: 'text/plain;charset=utf-8' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url); }
 function createModal() { const overlay = document.createElement('div'); overlay.className = 'modal-overlay'; overlay.onclick = (e) => { if (e.target === overlay) closeModal(); }; const modal = document.createElement('div'); modal.className = 'modal'; overlay.appendChild(modal); document.body.appendChild(overlay); window.currentModal = overlay; return modal; }
 function closeModal() { if (window.currentModal) { document.body.removeChild(window.currentModal); window.currentModal = null; } }
